@@ -17,7 +17,10 @@ export async function checkPushLimit(
   helpers: Helpers,
   settings: Settings,
 ): Promise<ValidationError | null> {
-  const namespaceMetadata = await getNamespaceMetadataFromHead(namespace, helpers);
+  const namespaceMetadata = await getNamespaceMetadataFromHead(
+    namespace,
+    helpers,
+  );
   if (!namespaceMetadata) return null;
 
   const editorEntry = getNamespaceEditorEntry(prAuthor, namespaceMetadata);
@@ -61,11 +64,9 @@ export async function checkPushLimit(
       `blobs/${namespace}/`,
     ];
 
-    const prs = (await helpers.git
-      .getAllPRs())
-      .filter(
-        (pr) => pr.user.id === prAuthor && new Date(pr.createdAt) >= startDate,
-      );
+    const prs = (await helpers.git.getAllPRs()).filter(
+      (pr) => pr.user.id === prAuthor && new Date(pr.created_at) >= startDate,
+    );
 
     let count = 0;
     for (const pr of prs) {

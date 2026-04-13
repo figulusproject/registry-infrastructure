@@ -18,14 +18,18 @@ export interface Helpers {
   };
   git: {
     showHead: (filePath: string, branch?: string) => Promise<string>;
-    getAllPRs: () => Promise<{
-      url: string;
-      createdAt: string;
-      user: { id: string };
-    }[]>;
-    getPRFiles: (prUrl: string) => Promise<{
-      filename: string;
-    }[]>;
+    getAllPRs: () => Promise<
+      {
+        url: string;
+        created_at: string;
+        user: { id: string };
+      }[]
+    >;
+    getPRFiles: (prUrl: string) => Promise<
+      {
+        filename: string;
+      }[]
+    >;
   };
 }
 
