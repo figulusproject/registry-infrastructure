@@ -5,7 +5,7 @@ import {
   FileValidationResult,
 } from "./types.js";
 import { ChangedFile } from "./changed-file.js";
-import { Settings } from "./settings.js";
+import { SettingsOutput } from "./settings.js";
 
 export class PR {
   constructor(
@@ -17,7 +17,7 @@ export class PR {
     return this.prInfo.author;
   }
 
-  public getSettings(): Settings {
+  public getSettings(): SettingsOutput {
     return this.registry.settings;
   }
 

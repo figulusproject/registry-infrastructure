@@ -1,5 +1,5 @@
 import { PR } from "./pr.js";
-import { Settings } from "./settings.js";
+import { loadSettings, SettingsOutput, SettingsInput } from "./settings.js";
 import { PullRequestInfo } from "./types.js";
 
 export interface Helpers {
@@ -34,10 +34,14 @@ export interface Helpers {
 }
 
 export class RegistryValidator {
+  public settings: SettingsOutput;
+
   constructor(
     public helpers: Helpers,
-    public settings: Settings,
-  ) {}
+    settingsInput: SettingsInput,
+  ) {
+    this.settings = loadSettings(settingsInput);
+  }
 
   public async validatePr(prInfo: PullRequestInfo) {
     return await new PR(prInfo, this).validate();

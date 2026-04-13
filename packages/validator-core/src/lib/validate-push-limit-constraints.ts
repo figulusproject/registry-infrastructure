@@ -1,4 +1,4 @@
-import { Settings } from "../settings.js";
+import { SettingsOutput } from "../settings.js";
 import {
   ValidationError,
   ERROR_CODES,
@@ -25,14 +25,14 @@ export function validatePushLimitConstraints(
 }
 
 export function getPushLimitConstraintsForEditor(
-  settings: Settings,
+  settings: SettingsOutput,
   unit: "daily" | "weekly",
 ): { min: number; max: number } {
   return settings.pushLimits.overridesSetBy.namespaceOwners[unit];
 }
 
 export function getPushLimitConstraintsForMaintainer(
-  settings: Settings,
+  settings: SettingsOutput,
   unit: "daily" | "weekly",
 ): { min: number; max: number } {
   return settings.pushLimits.overridesSetBy.registryMaintainers[unit];

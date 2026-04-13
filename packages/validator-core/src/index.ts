@@ -1,3 +1,3 @@
 export { Helpers, RegistryValidator } from "./registry-validator.js";
-export { settingsSchema } from "./settings.js";
-export type { Settings } from "./settings.js";
+export { settingsSchemaInput, settingsSchemaOutput } from "./settings.js";
+export type { SettingsOutput, SettingsInput } from "./settings.js";

@@ -9,13 +9,13 @@ import {
   ERROR_CODES,
   createError,
 } from "../validation-result.js";
-import { Settings } from "../settings.js";
+import { SettingsOutput } from "../settings.js";
 
 export async function checkPushLimit(
   prAuthor: string,
   namespace: string,
   helpers: Helpers,
-  settings: Settings,
+  settings: SettingsOutput,
 ): Promise<ValidationError | null> {
   const namespaceMetadata = await getNamespaceMetadataFromHead(
     namespace,

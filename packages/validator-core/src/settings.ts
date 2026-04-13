@@ -11,49 +11,64 @@ const pushLimitOverridesSetBySchema = z.object({
   }),
 });
 
-export const settingsSchema = z.object({
+const settingsSchemaRequiredFields = {
   repoRoot: z.string(),
-  registryMaintainers: z
-    .string()
-    .array()
-    .optional()
-    .default(["figulusproject"]),
-  restrictedNamespaces: z
-    .string()
-    .array()
-    .optional()
-    .default([
-      "examples",
-      "figulus",
-      "official",
-      "push-limit-overrides",
-      "verified",
-    ]),
-  pushLimits: z
-    .object({
-      default: z.object({
-        unit: z.enum(["daily", "weekly"]),
-        pushes: z.int(),
-      }),
-      overridesSetBy: z.object({
-        namespaceOwners: pushLimitOverridesSetBySchema,
-        registryMaintainers: pushLimitOverridesSetBySchema,
-      }),
-    })
-    .optional()
-    .default({
-      default: { unit: "daily", pushes: 10 },
-      overridesSetBy: {
-        namespaceOwners: {
-          daily: { min: 1, max: 10 },
-          weekly: { min: 1, max: 10 * 7 },
-        },
-        registryMaintainers: {
-          daily: { min: 0, max: 30 },
-          weekly: { min: 0, max: 30 * 7 },
-        },
-      },
-    }),
-});
+};
 
-export type Settings = z.infer<typeof settingsSchema>;
+const settingsSchemaOptionalFields = {
+  registryMaintainers: z.string().array(),
+  restrictedNamespaces: z.string().array(),
+  pushLimits: z.object({
+    default: z.object({
+      unit: z.enum(["daily", "weekly"]),
+      pushes: z.int(),
+    }),
+    overridesSetBy: z.object({
+      namespaceOwners: pushLimitOverridesSetBySchema,
+      registryMaintainers: pushLimitOverridesSetBySchema,
+    }),
+  }),
+};
+
+export const settingsSchemaOutput = z.object({
+  ...settingsSchemaOptionalFields,
+  ...settingsSchemaRequiredFields,
+});
+export type SettingsOutput = z.infer<typeof settingsSchemaOutput>;
+
+export const settingsSchemaInput = z.object({
+  ...z.object(settingsSchemaOptionalFields).partial().shape,
+  ...settingsSchemaRequiredFields,
+});
+export type SettingsInput = z.infer<typeof settingsSchemaInput>;
+
+const settingsDefaults: Omit<SettingsOutput, "repoRoot"> = {
+  registryMaintainers: ["figulusproject"],
+  restrictedNamespaces: [
+    "examples",
+    "figulus",
+    "official",
+    "push-limit-overrides",
+    "verified",
+  ],
+  pushLimits: {
+    default: { unit: "daily", pushes: 10 },
+    overridesSetBy: {
+      namespaceOwners: {
+        daily: { min: 1, max: 10 },
+        weekly: { min: 1, max: 10 * 7 },
+      },
+      registryMaintainers: {
+        daily: { min: 0, max: 30 },
+        weekly: { min: 0, max: 30 * 7 },
+      },
+    },
+  },
+};
+
+export function loadSettings(input: SettingsInput): SettingsOutput {
+  return {
+    ...settingsDefaults,
+    ...input,
+  };
+}
