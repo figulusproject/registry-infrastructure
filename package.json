@@ -5,7 +5,8 @@
   "description": "Infrastructure for the Figulus Registry",
   "type": "module",
   "workspaces": [
-    "packages/validator-core"
+    "packages/validator-core",
+    "packages/validator-node"
   ],
   "dependencies": {
     "@figulus/schema": "^0.4.0-alpha-dev",

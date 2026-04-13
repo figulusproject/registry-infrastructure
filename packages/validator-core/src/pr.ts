@@ -6,6 +6,7 @@ import {
 } from "./types.js";
 import { ChangedFile } from "./changed-file.js";
 import { SettingsOutput } from "./settings.js";
+import { renderValidationMessage } from "./lib/markdown-renderer.js";
 
 export class PR {
   constructor(
@@ -34,13 +35,15 @@ export class PR {
     let filesWithWarnings = 0;
 
     if (prInfo.changedFiles.length === 0) {
-      helpers.console.log("No changed files to validate");
+      const msg = "No changed files to validate";
+      helpers.console.log(msg);
       return {
         success: true,
         totalFiles: 0,
         filesWithErrors: 0,
         filesWithWarnings: 0,
         results: [],
+        markdown: msg,
       };
     }
 
@@ -48,49 +51,29 @@ export class PR {
       const result = await new ChangedFile(file, this).validate();
       results.push(result);
 
-      if (!result.result.success) {
-        filesWithErrors++;
-      } else if (result.result.warnings?.length) {
-        filesWithWarnings++;
-      }
+      if (!result.result.success) filesWithErrors++;
+      else if (result.result.warnings?.length) filesWithWarnings++;
     }
 
-    // Output results
     const hasErrors = filesWithErrors > 0;
-    if (hasErrors) {
-      helpers.console.error("\n❌ Validation failed:\n");
-      for (const result of results) {
-        if (!result.result.success) {
-          helpers.console.error(`📄 ${result.file}:`);
-          result.result.errors.forEach((err) => {
-            helpers.console.error(`   • [${err.code}] ${err.message}`);
-          });
-        }
-      }
-    } else {
-      helpers.console.log("✅ All validations passed!");
-    }
+    const markdown = renderValidationMessage({
+      success: !hasErrors,
+      totalFiles: prInfo.changedFiles.length,
+      filesWithErrors,
+      filesWithWarnings,
+      results,
+    });
 
-    if (filesWithWarnings > 0) {
-      helpers.console.log(
-        `\n⚠️  ${filesWithWarnings} file(s) with warnings:\n`,
-      );
-      for (const result of results) {
-        if (result.result.success && result.result.warnings?.length) {
-          helpers.console.log(`📄 ${result.file}:`);
-          result.result.warnings.forEach((warn) => {
-            helpers.console.log(`   • [${warn.code}] ${warn.message}`);
-          });
-        }
-      }
-    }
-
+    if(hasErrors) helpers.console.error(markdown);
+    else helpers.console.log(markdown);
+    
     return {
       success: !hasErrors,
       totalFiles: prInfo.changedFiles.length,
       filesWithErrors,
       filesWithWarnings,
       results,
+      markdown,
     };
   }
 }

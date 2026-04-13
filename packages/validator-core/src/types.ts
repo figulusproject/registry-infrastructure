@@ -20,4 +20,5 @@ export interface ValidationSummary {
   filesWithErrors: number;
   filesWithWarnings: number;
   results: FileValidationResult[];
+  markdown: string;
 }
