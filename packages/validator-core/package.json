@@ -3,9 +3,9 @@
   "version": "0.5.0-alpha-dev-01",
   "description": "Zod schemas for the Figulus engine API",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./dist/index.js"
   },
   "sideEffects": false,
   "scripts": {
