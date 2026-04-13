@@ -4,9 +4,8 @@ import {
 } from "../../changed-file.js";
 import {
   ValidationResult,
-  ERROR_CODES,
   createError,
-  success,
+  success
 } from "../../validation-result.js";
 
 export function validateBlob(file: ChangedFile): ValidationResult {
@@ -17,7 +16,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
     return {
       success: false,
       errors: [
-        createError("Invalid blob filename", ERROR_CODES.BLOB_INVALID_FILENAME),
+        createError({ code: "BLOB_INVALID_FILENAME" }),
       ],
     };
   }
@@ -28,8 +27,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
       success: false,
       errors: [
         createError(
-          "Blob filename must have extension",
-          ERROR_CODES.BLOB_MISSING_EXTENSION,
+          { code: "BLOB_MISSING_EXTENSION" },
         ),
       ],
     };
@@ -45,8 +43,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
       success: false,
       errors: [
         createError(
-          `Invalid blob extension: ${extension} (must be js, figspec, or figstack)`,
-          ERROR_CODES.BLOB_INVALID_EXTENSION,
+          { code: "BLOB_INVALID_EXTENSION", extension }
         ),
       ],
     };
@@ -62,8 +59,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
         success: false,
         errors: [
           createError(
-            `Hash mismatch: filename hash ${expectedHash} does not match content hash ${actualHash}`,
-            ERROR_CODES.BLOB_HASH_MISMATCH,
+            { code: "BLOB_HASH_MISMATCH", expectedHash, actualHash }
           ),
         ],
       };
@@ -73,8 +69,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
       success: false,
       errors: [
         createError(
-          `Failed to verify blob: ${error instanceof Error ? error.message : String(error)}`,
-          ERROR_CODES.BLOB_VERIFICATION_FAILED,
+          { code: "BLOB_VERIFICATION_FAILED", error: error instanceof Error ? error.message : String(error) }
         ),
       ],
     };

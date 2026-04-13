@@ -1,15 +1,14 @@
 import { Helpers } from "../registry-validator.js";
-import { getNamespaceEditorEntry } from "./namespace.js";
+import { SettingsOutput } from "../settings.js";
+import {
+  ValidationError,
+  createError
+} from "../validation-result.js";
 import {
   getNamespaceMetadataFromHead,
   getPushLimitOverridesFromHead,
 } from "./git-head.js";
-import {
-  ValidationError,
-  ERROR_CODES,
-  createError,
-} from "../validation-result.js";
-import { SettingsOutput } from "../settings.js";
+import { getNamespaceEditorEntry } from "./namespace.js";
 
 export async function checkPushLimit(
   prAuthor: string,
@@ -81,8 +80,7 @@ export async function checkPushLimit(
 
     if (count >= effectiveLimit.value)
       return createError(
-        `Push limit exceeded for namespace "${namespace}": ${count}/${effectiveLimit.value} ${effectiveLimit.unit} pushes used. Limit set by ${limitSource}.`,
-        ERROR_CODES.PUSH_LIMIT_EXCEEDED,
+        { code: "PUSH_LIMIT_EXCEEDED", namespace, pushesUsed: count, pushLimit: effectiveLimit.value, pushUnit: effectiveLimit.unit, limitSource }
       );
 
     return null;

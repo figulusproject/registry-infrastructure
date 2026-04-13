@@ -1,17 +1,16 @@
-import { ChangedFile } from "../../changed-file.js";
 import { namespaceMetadataSchema } from "@figulus/schema";
+import { ChangedFile } from "../../changed-file.js";
+import {
+  ValidationError,
+  ValidationResult,
+  createError,
+  success
+} from "../../validation-result.js";
 import { parseJSON, parseSchema } from "../parse.js";
 import { validateOwnershipTransfer } from "../validate-ownership-transfer.js";
 import {
-  ValidationResult,
-  ValidationError,
-  ERROR_CODES,
-  createError,
-  success,
-} from "../../validation-result.js";
-import {
-  validatePushLimitConstraints,
   getPushLimitConstraintsForEditor,
+  validatePushLimitConstraints,
 } from "../validate-push-limit-constraints.js";
 
 export async function validateNamespaceMetadata(file: ChangedFile): Promise<ValidationResult> {
@@ -26,8 +25,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
         success: false,
         errors: [
           createError(
-            `Cannot create namespace "${namespace}": this name is reserved. You must be a registry maintainer to claim this namespace.`,
-            ERROR_CODES.NAMESPACE_RESERVED,
+            { code: "NAMESPACE_RESERVED", namespace }
           ),
         ],
       };
@@ -72,8 +70,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
             success: false,
             errors: [
               createError(
-                `PR author "${prAuthor}" is not listed as an editor in the existing namespace metadata`,
-                ERROR_CODES.NAMESPACE_NOT_EDITOR,
+                { code: "NAMESPACE_NOT_EDITOR", author: prAuthor, namespace }
               ),
             ],
           };
@@ -113,8 +110,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
             success: false,
             errors: [
               createError(
-                `Failed to parse namespace metadata: ${error instanceof Error ? error.message : String(error)}`,
-                ERROR_CODES.NAMESPACE_PARSE_ERROR,
+                { code: "NAMESPACE_PARSE_ERROR", error: error instanceof Error ? error.message : String(error) }
               ),
             ],
           };
@@ -124,8 +120,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
           success: false,
           errors: [
             createError(
-              `Failed to parse HEAD version of namespace metadata: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
-              ERROR_CODES.NAMESPACE_PARSE_ERROR,
+              { code: "NAMESPACE_PARSE_HEAD_ERROR", error: parseError instanceof Error ? parseError.message : String(parseError) }
             ),
           ],
         };
@@ -157,8 +152,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
         success: false,
         errors: [
           createError(
-            `PR author "${prAuthor}" is not listed as an editor in the namespace`,
-            ERROR_CODES.NAMESPACE_NOT_EDITOR,
+            { code: "NAMESPACE_NOT_EDITOR", author: prAuthor, namespace }
           ),
         ],
       };
@@ -170,8 +164,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
       success: false,
       errors: [
         createError(
-          `Failed to parse namespace metadata: ${error instanceof Error ? error.message : String(error)}`,
-          ERROR_CODES.NAMESPACE_PARSE_ERROR,
+          { code: "NAMESPACE_PARSE_ERROR", error: error instanceof Error ? error.message : String(error) }
         ),
       ],
     };

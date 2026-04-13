@@ -1,8 +1,7 @@
 import {
   ValidationResult,
-  ERROR_CODES,
   createError,
-  success,
+  success
 } from "../validation-result.js";
 
 export function validateOwnershipTransfer(
@@ -15,8 +14,7 @@ export function validateOwnershipTransfer(
       success: false,
       errors: [
         createError(
-          `Only the namespace owner ("${headOwner}") can transfer ownership`,
-          ERROR_CODES.NAMESPACE_OWNERSHIP_TRANSFER_DENIED,
+          { code: "NAMESPACE_OWNERSHIP_TRANSFER_DENIED", headOwner: headOwner! }
         ),
       ],
     };

@@ -3,17 +3,16 @@ import {
   FileTypeEntity,
   getSchemaFromFileTypeEntity,
 } from "../../changed-file.js";
-import { getNamespaceEditorEntry } from "../namespace.js";
-import { parseSchema } from "../parse.js";
-import { checkPushLimit } from "../check-push-limit.js";
-import { getNamespaceMetadataFromHead } from "../git-head.js";
-import { validateBlobReferences } from "../validate-blob-references.js";
 import {
   ValidationResult,
-  ERROR_CODES,
   createError,
-  success,
+  success
 } from "../../validation-result.js";
+import { checkPushLimit } from "../check-push-limit.js";
+import { getNamespaceMetadataFromHead } from "../git-head.js";
+import { getNamespaceEditorEntry } from "../namespace.js";
+import { parseSchema } from "../parse.js";
+import { validateBlobReferences } from "../validate-blob-references.js";
 
 export async function validateEntity(
   file: ChangedFile,
@@ -32,8 +31,7 @@ export async function validateEntity(
           success: false,
           errors: [
             createError(
-              `The ${namespace}/ namespace is reserved. Changes require maintainer approval.`,
-              ERROR_CODES.NAMESPACE_RESERVED,
+              { code: "NAMESPACE_RESERVED", namespace }
             ),
           ],
         };
@@ -48,8 +46,7 @@ export async function validateEntity(
           success: false,
           errors: [
             createError(
-              `Namespace "${namespace}" does not exist. Run \`figulus registry claim ${namespace}\` to claim it before publishing.`,
-              ERROR_CODES.NAMESPACE_NOT_FOUND,
+              { code: "NAMESPACE_NOT_FOUND", namespace }
             ),
           ],
         };
@@ -60,8 +57,7 @@ export async function validateEntity(
           success: false,
           errors: [
             createError(
-              `PR author "${prInfo.author}" is not listed as an editor for namespace "${namespace}"`,
-              ERROR_CODES.NAMESPACE_NOT_EDITOR,
+              { code: "NAMESPACE_NOT_EDITOR", author: prInfo.author, namespace }
             ),
           ],
         };
@@ -102,8 +98,7 @@ export async function validateEntity(
       success: false,
       errors: [
         createError(
-          `Failed to parse ${type}: ${error instanceof Error ? error.message : String(error)}`,
-          ERROR_CODES.ENTITY_PARSE_ERROR,
+          { code: "ENTITY_PARSE_ERROR", type, error: error instanceof Error ? error.message : String(error) }
         ),
       ],
     };

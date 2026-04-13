@@ -3,15 +3,14 @@ import {
   FileTypeNamespaceOverrides,
   getSchemaFromFileTypeNamespaceOverrides,
 } from "../../changed-file.js";
-import { parseSchema } from "../parse.js";
 import {
   ValidationResult,
-  ERROR_CODES,
-  createError,
+  createError
 } from "../../validation-result.js";
+import { parseSchema } from "../parse.js";
 import {
-  validatePushLimitConstraints,
   getPushLimitConstraintsForMaintainer,
+  validatePushLimitConstraints,
 } from "../validate-push-limit-constraints.js";
 
 export function validateNamespaceOverrides(
@@ -24,8 +23,7 @@ export function validateNamespaceOverrides(
       success: false,
       errors: [
         createError(
-          `Only registry maintainers can modify ${file.path}`,
-          ERROR_CODES.PERMISSION_DENIED_MAINTAINER_ONLY,
+          { code: "PERMISSION_DENIED_MAINTAINER_ONLY", path: file.path }
         ),
       ],
     };
@@ -71,8 +69,7 @@ export function validateNamespaceOverrides(
       success: false,
       errors: [
         createError(
-          `Failed to parse ${file.path}: ${error instanceof Error ? error.message : String(error)}`,
-          ERROR_CODES.NAMESPACE_PARSE_ERROR,
+          { code: "NAMESPACE_PARSE_ERROR", error: error instanceof Error ? error.message : String(error) }
         ),
       ],
     };

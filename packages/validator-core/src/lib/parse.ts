@@ -3,9 +3,8 @@ import z from "zod";
 import { ChangedFile } from "../changed-file.js";
 import {
   ValidationResult,
-  ERROR_CODES,
   createError,
-  success,
+  success
 } from "../validation-result.js";
 
 export function parseJSON(data: string): any {
@@ -21,8 +20,7 @@ export function parseSchema(
     const errors = result.error.issues.map((err) => {
       const path = err.path.length > 0 ? err.path.join(".") : "root";
       return createError(
-        `${path}: ${err.message}`,
-        ERROR_CODES.ENTITY_SCHEMA_INVALID,
+        { code: "ENTITY_SCHEMA_INVALID", path, error: err.message }
       );
     });
     return { success: false, errors };

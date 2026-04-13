@@ -5,9 +5,8 @@ import {
 import { RegistryValidator } from "../registry-validator.js";
 import {
   ValidationResult,
-  ERROR_CODES,
   createError,
-  success,
+  success
 } from "../validation-result.js";
 
 export function validateBlobReferences(
@@ -36,8 +35,7 @@ export function validateBlobReferences(
     if (!registry.helpers.fs.fileOrDirExists(blobPath)) {
       errors.push(
         createError(
-          `Variant references blob ${contentHash} but blobs/${namespace}/${contentHash}.${extension} does not exist in the repository`,
-          ERROR_CODES.BLOB_REFERENCE_NOT_FOUND,
+          { code: "BLOB_REFERENCE_NOT_FOUND", contentHash, namespace, extension }
         ),
       );
     }

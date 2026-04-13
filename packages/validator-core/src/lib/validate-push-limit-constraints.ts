@@ -1,8 +1,7 @@
 import { SettingsOutput } from "../settings.js";
 import {
   ValidationError,
-  ERROR_CODES,
-  createError,
+  createError
 } from "../validation-result.js";
 
 export interface PushLimitValue {
@@ -17,8 +16,7 @@ export function validatePushLimitConstraints(
 ): ValidationError | null {
   if (pushLimit.value < constraints.min || pushLimit.value > constraints.max) {
     return createError(
-      `${context} push limit ${pushLimit.value}/${pushLimit.unit} is outside allowed range: ${constraints.min}-${constraints.max}`,
-      ERROR_CODES.PUSH_LIMIT_EXCEEDED,
+      { code: "PUSH_LIMIT_OUT_OF_RANGE", context, provided: pushLimit.value, pushUnit: pushLimit.unit, constraintMin: constraints.min, constraintMax: constraints.max }
     );
   }
   return null;

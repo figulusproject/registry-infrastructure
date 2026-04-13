@@ -56,23 +56,20 @@ export class PR {
     }
 
     const hasErrors = filesWithErrors > 0;
-    const markdown = renderValidationMessage({
+    const baseOutput = {
       success: !hasErrors,
       totalFiles: prInfo.changedFiles.length,
       filesWithErrors,
       filesWithWarnings,
       results,
-    });
+    };
+    const markdown = renderValidationMessage(baseOutput);
 
     if(hasErrors) helpers.console.error(markdown);
     else helpers.console.log(markdown);
     
     return {
-      success: !hasErrors,
-      totalFiles: prInfo.changedFiles.length,
-      filesWithErrors,
-      filesWithWarnings,
-      results,
+      ...baseOutput,
       markdown,
     };
   }

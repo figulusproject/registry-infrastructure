@@ -1,10 +1,3 @@
-import z from "zod";
-import { parseJSON } from "./lib/parse.js";
-import { validateBlob } from "./lib/validate-file/blob.js";
-import { validateEntity } from "./lib/validate-file/entity.js";
-import { validateNamespaceMetadata } from "./lib/validate-file/namespace-metadata.js";
-import { validateNamespaceOverrides } from "./lib/validate-file/namespace-overrides.js";
-import { PR } from "./pr.js";
 import {
   figParserMetadataSchema,
   figSpecMetadataSchema,
@@ -12,11 +5,17 @@ import {
   namespaceVerificationsSchema,
   pushLimitOverridesSchema,
 } from "@figulus/schema/registry";
+import z from "zod";
+import { parseJSON } from "./lib/parse.js";
+import { validateBlob } from "./lib/validate-file/blob.js";
+import { validateEntity } from "./lib/validate-file/entity.js";
+import { validateNamespaceMetadata } from "./lib/validate-file/namespace-metadata.js";
+import { validateNamespaceOverrides } from "./lib/validate-file/namespace-overrides.js";
+import { PR } from "./pr.js";
 import { FileValidationResult, SchemaObject } from "./types.js";
 import {
-  ERROR_CODES,
   ValidationResult,
-  createError,
+  createError
 } from "./validation-result.js";
 
 //
@@ -159,8 +158,7 @@ export class ChangedFile {
           success: false,
           errors: [
             createError(
-              "File path does not match any known registry structure",
-              ERROR_CODES.FILE_TYPE_UNKNOWN,
+              { code: "FILE_TYPE_UNKNOWN" }
             ),
           ],
         },
