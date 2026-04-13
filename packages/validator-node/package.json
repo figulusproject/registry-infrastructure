@@ -1,0 +1,27 @@
+{
+  "name": "@figulus/validator-node",
+  "version": "0.5.0-alpha-dev-01",
+  "description": "Node implementation of the Figulus Validator",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@figulus/validator-core": "^0.5.0-alpha-dev-09",
+    "up-fetch": "^2.6.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "dotenv": "^17.4.2",
+    "node": "^25.9.0",
+    "prettier": "^3.8.2",
+    "typescript": "^5.7.2"
+  }
+}
