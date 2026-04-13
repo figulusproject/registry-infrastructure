@@ -18,6 +18,10 @@ const settingsSchemaRequiredFields = {
 const settingsSchemaOptionalFields = {
   registryMaintainers: z.string().array(),
   restrictedNamespaces: z.string().array(),
+  registryRepo: z.object({
+    apiUrl: z.url(),
+    accessToken: z.string().optional().nullable(),
+  }),
   pushLimits: z.object({
     default: z.object({
       unit: z.enum(["daily", "weekly"]),
@@ -51,6 +55,9 @@ const settingsDefaults: Omit<SettingsOutput, "repoRoot"> = {
     "push-limit-overrides",
     "verified",
   ],
+  registryRepo: {
+    apiUrl: "https://api.github.com/repos/figulusproject/registry/",
+  },
   pushLimits: {
     default: { unit: "daily", pushes: 10 },
     overridesSetBy: {
