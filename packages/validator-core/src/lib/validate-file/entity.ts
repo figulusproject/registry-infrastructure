@@ -15,17 +15,17 @@ import {
   success,
 } from "../../validation-result.js";
 
-export function validateEntity(
+export async function validateEntity(
   file: ChangedFile,
   type: FileTypeEntity,
-): ValidationResult {
+): Promise<ValidationResult> {
   const { registry, prInfo } = file.pr;
   const { settings, helpers } = registry;
   const { fs } = helpers;
 
   const namespace = file.getNamespace(type);
 
-  const isAllowedToChangeEntityFile = () => {
+  const isAllowedToChangeEntityFile = async () => {
     if (registry.isNamespaceRestricted(namespace)) {
       if (!registry.isMaintainer(prInfo.author)) {
         return {
@@ -39,7 +39,7 @@ export function validateEntity(
         };
       }
     } else {
-      const namespaceMetadata = getNamespaceMetadataFromHead(
+      const namespaceMetadata = await getNamespaceMetadataFromHead(
         namespace,
         registry.helpers,
       );
@@ -67,7 +67,7 @@ export function validateEntity(
         };
       }
 
-      const pushLimitError = checkPushLimit(
+      const pushLimitError = await checkPushLimit(
         prInfo.author,
         namespace,
         helpers,
@@ -84,7 +84,7 @@ export function validateEntity(
     return success();
   };
 
-  const permissionResult = isAllowedToChangeEntityFile();
+  const permissionResult = await isAllowedToChangeEntityFile();
   if (!permissionResult.success) return permissionResult;
 
   try {

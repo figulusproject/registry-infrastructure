@@ -14,7 +14,7 @@ import {
   getPushLimitConstraintsForEditor,
 } from "../validate-push-limit-constraints.js";
 
-export function validateNamespaceMetadata(file: ChangedFile): ValidationResult {
+export async function validateNamespaceMetadata(file: ChangedFile): Promise<ValidationResult> {
   const { registry, prInfo } = file.pr;
   const { git } = registry.helpers;
 
@@ -60,7 +60,7 @@ export function validateNamespaceMetadata(file: ChangedFile): ValidationResult {
   if (namespace) {
     try {
       try {
-        const headContent = git.showHead(file.path);
+        const headContent = await git.showHead(file.path);
         const headData = parseJSON(headContent);
 
         const headEditors = headData.editors || [];

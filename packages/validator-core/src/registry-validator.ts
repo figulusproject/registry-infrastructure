@@ -17,15 +17,15 @@ export interface Helpers {
     readFileAsUtf8: (path: string) => string;
   };
   git: {
-    showHead: (filePath: string) => string;
-    getAllPRs: () => {
+    showHead: (filePath: string, branch?: string) => Promise<string>;
+    getAllPRs: () => Promise<{
       url: string;
       createdAt: string;
       user: { id: string };
-    }[];
-    getPRFiles: (url: string) => {
+    }[]>;
+    getPRFiles: (prUrl: string) => Promise<{
       filename: string;
-    }[];
+    }[]>;
   };
 }
 
@@ -35,8 +35,8 @@ export class RegistryValidator {
     public settings: Settings,
   ) {}
 
-  public validatePr(prInfo: PullRequestInfo) {
-    return new PR(prInfo, this);
+  public async validatePr(prInfo: PullRequestInfo) {
+    return await new PR(prInfo, this).validate();
   }
 
   public isMaintainer(user: string): boolean {

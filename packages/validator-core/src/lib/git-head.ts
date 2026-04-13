@@ -8,13 +8,13 @@ import {
 } from "@figulus/schema/registry";
 import { parseJSON } from "./parse.js";
 
-function getFileFromHeadAndParse(
+async function getFileFromHeadAndParse(
   filePath: string,
   schema: SchemaObject,
   helpers: Helpers,
 ) {
   try {
-    const headContent = helpers.git.showHead(filePath);
+    const headContent = await helpers.git.showHead(filePath);
     const data = parseJSON(headContent);
     const result = schema.safeParse(data);
     return result.success ? data : null;
@@ -23,9 +23,9 @@ function getFileFromHeadAndParse(
   }
 }
 
-export function getPushLimitOverridesFromHead(
+export async function getPushLimitOverridesFromHead(
   helpers: Helpers,
-): PushLimitOverrides | null {
+): Promise<PushLimitOverrides | null> {
   return getFileFromHeadAndParse(
     "namespaces/push-limit-overrides.json",
     pushLimitOverridesSchema,
@@ -36,7 +36,7 @@ export function getPushLimitOverridesFromHead(
 export function getNamespaceMetadataFromHead(
   namespace: string,
   helpers: Helpers,
-): NamespaceMetadata | null {
+): Promise<NamespaceMetadata | null> {
   return getFileFromHeadAndParse(
     `namespaces/${namespace}.json`,
     namespaceMetadataSchema,

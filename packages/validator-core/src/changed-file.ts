@@ -148,7 +148,7 @@ export class ChangedFile {
     return parseJSON(content);
   }
 
-  public validate(): FileValidationResult {
+  public async validate(): Promise<FileValidationResult> {
     const fileType = this.getFileType();
 
     if (!fileType) {
@@ -172,13 +172,13 @@ export class ChangedFile {
       case "spec":
       case "stack":
       case "parser":
-        result = validateEntity(this, fileType);
+        result = await validateEntity(this, fileType);
         break;
       case "blob":
         result = validateBlob(this);
         break;
       case "namespace":
-        result = validateNamespaceMetadata(this);
+        result = await validateNamespaceMetadata(this);
         break;
       case "verified":
       case "limits":

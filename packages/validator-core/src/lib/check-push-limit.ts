@@ -11,13 +11,13 @@ import {
 } from "../validation-result.js";
 import { Settings } from "../settings.js";
 
-export function checkPushLimit(
+export async function checkPushLimit(
   prAuthor: string,
   namespace: string,
   helpers: Helpers,
   settings: Settings,
-): ValidationError | null {
-  const namespaceMetadata = getNamespaceMetadataFromHead(namespace, helpers);
+): Promise<ValidationError | null> {
+  const namespaceMetadata = await getNamespaceMetadataFromHead(namespace, helpers);
   if (!namespaceMetadata) return null;
 
   const editorEntry = getNamespaceEditorEntry(prAuthor, namespaceMetadata);
@@ -28,7 +28,7 @@ export function checkPushLimit(
     value: settings.pushLimits.default.pushes,
   };
 
-  const overrides = getPushLimitOverridesFromHead(helpers);
+  const overrides = await getPushLimitOverridesFromHead(helpers);
   const override = overrides
     ? overrides.find((o) => o.namespace === namespace)
     : undefined;
@@ -61,15 +61,15 @@ export function checkPushLimit(
       `blobs/${namespace}/`,
     ];
 
-    const prs = helpers.git
-      .getAllPRs()
+    const prs = (await helpers.git
+      .getAllPRs())
       .filter(
         (pr) => pr.user.id === prAuthor && new Date(pr.createdAt) >= startDate,
       );
 
     let count = 0;
     for (const pr of prs) {
-      const files = helpers.git.getPRFiles(pr.url);
+      const files = await helpers.git.getPRFiles(pr.url);
 
       const touchesNamespace = files.some((f: any) =>
         filePrefixes.some((prefix) => f.filename.startsWith(prefix)),

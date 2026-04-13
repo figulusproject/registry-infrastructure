@@ -25,7 +25,7 @@ export class PR {
     return this.registry.helpers;
   }
 
-  public validate(): ValidationSummary {
+  public async validate(): Promise<ValidationSummary> {
     const { prInfo, registry } = this;
     const { helpers } = registry;
 
@@ -45,7 +45,7 @@ export class PR {
     }
 
     for (const file of prInfo.changedFiles) {
-      const result = new ChangedFile(file, this).validate();
+      const result = await new ChangedFile(file, this).validate();
       results.push(result);
 
       if (!result.result.success) {
