@@ -1,6 +1,6 @@
 {
   "name": "@figulus/validator-node",
-  "version": "0.5.0-alpha-dev-02",
+  "version": "0.5.0-alpha-dev-03",
   "description": "Node implementation of the Figulus Validator",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,13 +17,13 @@
   },
   "dependencies": {
     "@figulus/validator-core": "^0.5.0-alpha-dev-12",
+    "dotenv": "^17.4.2",
     "up-fetch": "^2.6.0",
+    "@types/node": "^25.6.0",
+    "node": "^25.9.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "dotenv": "^17.4.2",
-    "node": "^25.9.0",
     "prettier": "^3.8.2",
     "typescript": "^5.7.2"
   }
