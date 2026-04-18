@@ -6,7 +6,7 @@ import {
 } from "./types.js";
 import { ChangedFile } from "./changed-file.js";
 import { SettingsOutput } from "./settings.js";
-import { renderValidationMessage } from "./lib/markdown-renderer.js";
+import { renderValidationMessage } from "./lib/output-renderer.js";
 
 export class PR {
   constructor(
