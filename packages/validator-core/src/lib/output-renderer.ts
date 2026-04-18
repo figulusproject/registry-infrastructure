@@ -4,7 +4,7 @@ import { FailureResult, SuccessResult, ValidationError } from "../validation-res
 type Summary = Omit<ValidationSummary, "markdown">;
 
 function renderError(error: ValidationError): string {
-  return `• ${error.message}`;
+  return `- ${error.message}`;
 }
 
 function renderErrors(errors: ValidationError[]): string {
@@ -21,7 +21,7 @@ function renderFailureResultsMessage(summary: Summary): string {
 
   failures.forEach((fileResult) => {
     const result = fileResult.result as FailureResult;
-    message += `- \`${fileResult.file}\`\n`;
+    message += `#### \`${fileResult.file}\`:\n`;
     message += renderErrors(result.errors);
     message += "\n\n";
   });
@@ -39,7 +39,7 @@ function renderWarningsMessage(summary: Summary): string {
 
   warnings.forEach((fileResult) => {
     const result = fileResult.result as SuccessResult;
-    message += `- \`${fileResult.file}\`\n`;
+    message += `#### \`${fileResult.file}\`\n`;
     message += renderErrors(result.warnings || []);
     message += "\n\n";
   });

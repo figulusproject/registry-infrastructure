@@ -1,0 +1,41 @@
+name = "figulus-registry-proxy"
+main = "cloudflare-worker.ts"
+compatibility_date = "2024-12-16"
+compatibility_flags = ["nodejs_compat"]
+
+# The worker runs at registry.figulus.net
+routes = [
+  { pattern = "registry.figulus.net/*", zone_name = "figulus.net" }
+]
+
+# Environment configuration
+[env.production]
+name = "figulus-registry-proxy"
+routes = [
+  { pattern = "registry.figulus.net/*", zone_name = "figulus.net" }
+]
+
+[env.staging]
+name = "figulus-registry-proxy-staging"
+routes = [
+  { pattern = "registry-staging.figulus.net/*", zone_name = "figulus.net" }
+]
+
+# Local development
+[env.development]
+name = "figulus-registry-proxy-dev"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
