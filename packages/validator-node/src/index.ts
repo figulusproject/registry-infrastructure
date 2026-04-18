@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { RegistryValidator } from "@figulus/validator-core";
 import { args } from "./cli.js";
 import { helpers } from "./helpers.js";
