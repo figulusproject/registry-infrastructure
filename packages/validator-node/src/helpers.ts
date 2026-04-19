@@ -2,7 +2,7 @@ import { Helpers } from "@figulus/validator-core";
 import { createHash } from "crypto";
 import { existsSync, readFileSync } from "fs";
 import path from "path";
-import { getAllPRs, getHead, getPRFiles } from "./fetch.js";
+import { getAllPRs, getHead, getPRFiles, getRegistrySettings } from "./fetch.js";
 
 export const helpers: Helpers = {
     console: {
@@ -23,5 +23,6 @@ export const helpers: Helpers = {
         showHead: getHead,
         getAllPRs: getAllPRs,
         getPRFiles: getPRFiles,
+        getSettings: getRegistrySettings,
     },
 };

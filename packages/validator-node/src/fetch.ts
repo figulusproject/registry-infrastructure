@@ -1,11 +1,12 @@
+import {
+  fetchRegistrySettingsRouteSchema,
+  getAllPRsRouteSchema,
+  getFileContentsRouteSchema,
+  getPRFilesRouteSchema
+} from "@figulus/schema/registry";
 import { up } from "up-fetch";
 import { ZodType } from "zod";
-import {
-  getAllPRsRouteSchema,
-  getPRFilesRouteSchema,
-  getFileContentsRouteSchema,
-} from "@figulus/schema/registry";
-import { settings } from "./settings.js";
+import { validatorSettings } from "./validator-settings.js";
 
 const upfetch = up(fetch);
 
@@ -69,7 +70,7 @@ async function fetchFromRegistry<T>(params: {
     additionalHeaders?: { [key: string]: string };
     schema?: ZodType<T>;
 }) {
-    const baseUrl = params.baseUrl || settings.registryRepo.url;
+    const baseUrl = params.baseUrl || validatorSettings.registry.url;
     const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     const url = cleanBase + params.route;
 
@@ -77,10 +78,10 @@ async function fetchFromRegistry<T>(params: {
         ...params.additionalHeaders,
     };
 
-    if(settings.registryRepo.accessToken) {
+    if(validatorSettings.registry.accessToken) {
         headers = {
             ...headers,
-            "Authorization": `Bearer ${settings.registryRepo.accessToken}`
+            "Authorization": `Bearer ${validatorSettings.registry.accessToken}`
         }
     }
 
@@ -96,6 +97,12 @@ async function fetchFromRegistry<T>(params: {
     return res as T;
 }
 
+export async function getRegistrySettings() {
+    return await fetchFromRegistry<string>({
+        route: buildPath(fetchRegistrySettingsRouteSchema),
+    });
+}
+
 export async function getAllPRs() {
     const schema = getResponseSchema(getAllPRsRouteSchema);
     const route = buildPath(getAllPRsRouteSchema, {
@@ -103,7 +110,6 @@ export async function getAllPRs() {
         per_page: 100,
     });
 
-    console.log(route)
     return await fetchFromRegistry({
         route,
         schema,
@@ -120,7 +126,6 @@ export async function getPRFiles(prUrl: string) {
         prNumber,
     });
 
-    console.log(route)
     return await fetchFromRegistry({
         route,
         schema,
@@ -133,8 +138,6 @@ export async function getHead(filePath: string, branch?: string) {
         filePath,
         ref: branch || "main",
     });
-
-    console.log(route)
 
     const res = await fetchFromRegistry<any>({
         route,

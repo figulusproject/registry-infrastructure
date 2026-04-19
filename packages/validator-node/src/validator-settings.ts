@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { loadSettings, SettingsInput, settingsSchemaInput } from "@figulus/validator-core";
+import { loadValidatorSettings, ValidatorSettingsInput, validatorSettingsSchemaInput } from "@figulus/validator-core";
 import { stringifiedStringArraySchema } from "./types.js";
 import { args } from "./cli.js";
 import { readFileSync } from "node:fs";
@@ -7,7 +7,7 @@ import path from "node:path";
 
 dotenv.config();
 
-function loadFile(): Partial<SettingsInput> {
+function loadFile(): Partial<ValidatorSettingsInput> {
     try {
         if(!args["settings-file"]) return {};
         const fullPath = path.resolve(args["settings-file"]);
@@ -17,9 +17,9 @@ function loadFile(): Partial<SettingsInput> {
     }
 }
 
-function loadEnv(): Partial<SettingsInput> {
+function loadEnv(): Partial<ValidatorSettingsInput> {
     try {
-        const keys = Object.fromEntries(Object.keys(settingsSchemaInput.shape).map((str) => {
+        const keys = Object.fromEntries(Object.keys(validatorSettingsSchemaInput.shape).map((str) => {
             const envKey = str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
             const env = process.env[envKey];
             if(!env) return undefined;
@@ -48,7 +48,7 @@ function loadEnv(): Partial<SettingsInput> {
 const file = loadFile();
 const env = loadEnv();
 
-export const settings = loadSettings({
+export const validatorSettings = loadValidatorSettings({
     repoRoot: args["repo-root"] || process.cwd(),
     ...file,
     ...env,
