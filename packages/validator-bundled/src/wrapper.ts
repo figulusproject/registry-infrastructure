@@ -1,4 +1,4 @@
-import { RegistryValidator, loadSettings, type Helpers, type ValidationSummary } from '@figulus/validator-core';
+import { RegistryValidator, loadValidatorSettings, type Helpers, type ValidationSummary } from '@figulus/validator-core';
 
 declare global {
   var __goHelpers: Helpers;
@@ -10,7 +10,7 @@ globalThis.validateRegistryChanges = async (
   author: string
 ): Promise<string> => {
   const helpers = globalThis.__goHelpers;
-  const settings = loadSettings(JSON.parse(globalThis.__goSettings));
+  const settings = loadValidatorSettings(JSON.parse(globalThis.__goSettings));
 
   const validator = new RegistryValidator(helpers, settings);
   const result = await validator.validatePr({ changedFiles, author });
