@@ -1,6 +1,6 @@
 {
   "name": "@figulus/validator-core",
-  "version": "0.5.0-alpha-dev-12",
+  "version": "0.5.0-alpha-dev-13",
   "description": "Core logic for the Figulus Validator",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@figulus/schema": "^0.5.0-alpha-dev-9",
+    "@figulus/schema": "^0.5.0-alpha-dev-10",
     "strip-json-comments": "^5.0.1",
     "zod": "^4.3.6"
   },

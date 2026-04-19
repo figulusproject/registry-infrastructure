@@ -10,7 +10,5 @@
     "packages/validator-bundled"
   ],
   "dependencies": {
-    "@figulus/schema": "^0.4.0-alpha-dev",
-    "zod-spdx": "^1.0.0"
   }
 }

@@ -19,7 +19,7 @@ const settingsSchemaOptionalFields = {
   registryMaintainers: z.string().array(),
   restrictedNamespaces: z.string().array(),
   registryRepo: z.object({
-    apiUrl: z.url(),
+    url: z.url(),
     accessToken: z.string().optional().nullable(),
   }),
   pushLimits: z.object({
@@ -56,7 +56,7 @@ const settingsDefaults: Omit<SettingsOutput, "repoRoot"> = {
     "verified",
   ],
   registryRepo: {
-    apiUrl: "https://api.github.com/repos/figulusproject/registry/",
+    url: "https://registry.figulus.net",
   },
   pushLimits: {
     default: { unit: "daily", pushes: 10 },
