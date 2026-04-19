@@ -23,7 +23,7 @@ export const validatorSettingsSchemaInput = z.object({
 });
 export type ValidatorSettingsInput = z.infer<typeof validatorSettingsSchemaInput>;
 
-const validatorSettingsDefaults: Omit<ValidatorSettingsOutput, "repoRoot"> = {
+export const validatorSettingsDefaults: Omit<ValidatorSettingsOutput, "repoRoot"> = {
   registry: {
     url: "https://registry.figulus.net",
   },

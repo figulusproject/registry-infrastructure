@@ -7,6 +7,7 @@ import {
 import { up } from "up-fetch";
 import { ZodType } from "zod";
 import { validatorSettings } from "./validator-settings.js";
+import { validatorSettingsDefaults } from "../../validator-core/dist/validator-settings.js";
 
 const upfetch = up(fetch);
 
@@ -70,10 +71,6 @@ async function fetchFromRegistry<T>(params: {
     additionalHeaders?: { [key: string]: string };
     schema?: ZodType<T>;
 }) {
-    const baseUrl = params.baseUrl || validatorSettings.registry.url;
-    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const url = cleanBase + params.route;
-
     let headers = {
         ...params.additionalHeaders,
     };
@@ -84,13 +81,30 @@ async function fetchFromRegistry<T>(params: {
             "Authorization": `Bearer ${validatorSettings.registry.accessToken}`
         }
     }
+    
+    const fetchWithFallback = async (baseUrlOverride?: string) => {
+      const baseUrl = baseUrlOverride || params.baseUrl || validatorSettings.registry.url;
+      const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+      const url = cleanBase + params.route;
+      
+      try {
+        return await upfetch(url, {
+          headers,
+          schema: params.schema,
+        });
+      } catch {
+        const fallbackUrl = validatorSettingsDefaults.registry.url;
 
-    console.log("Fetching from:", url)
+        if(!baseUrlOverride) {
+          console.warn(`Failed to connect to registry '${baseUrl}'. Re-attempting with registry '${fallbackUrl}'...`);
+          return await fetchWithFallback(fallbackUrl);
+        }
 
-    const res = await upfetch(url, {
-        headers,
-        schema: params.schema,
-    });
+        throw new Error(`Failed to connect to registries '${baseUrl}' and '${fallbackUrl}'. Terminating...`);
+      }
+    }
+
+    const res = await fetchWithFallback();
 
     if(params.route.includes(".json") && !params.schema)
         return JSON.stringify(res) as T;
