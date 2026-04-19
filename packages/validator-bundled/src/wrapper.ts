@@ -8,10 +8,11 @@ declare global {
 globalThis.validateRegistryChanges = async (
   changedFiles: string[],
   author: string
-): Promise<ValidationSummary> => {
+): Promise<string> => {
   const helpers = globalThis.__goHelpers;
   const settings = loadSettings(JSON.parse(globalThis.__goSettings));
 
   const validator = new RegistryValidator(helpers, settings);
-  return validator.validatePr({ changedFiles, author });
+  const result = await validator.validatePr({ changedFiles, author });
+  return JSON.stringify(result);
 };
