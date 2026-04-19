@@ -1,7 +1,7 @@
 import { loadRegistrySettings, RegistrySettings, registrySettingsPartialSchema } from "@figulus/schema";
 import { PR } from "./pr.js";
-import { loadValidatorSettings, ValidatorSettingsOutput, ValidatorSettingsInput } from "./settings.js";
 import { PullRequestInfo } from "./types.js";
+import { loadValidatorSettings, ValidatorSettingsInput, ValidatorSettingsOutput } from "./validator-settings.js";
 
 export interface Helpers {
   console: {

@@ -1,12 +1,12 @@
-import { RegistryValidator, Helpers } from "./registry-validator";
+import { ChangedFile } from "./changed-file.js";
+import { renderValidationMessage } from "./lib/output-renderer.js";
+import { Helpers, RegistryValidator } from "./registry-validator";
 import {
+  FileValidationResult,
   PullRequestInfo,
   ValidationSummary,
-  FileValidationResult,
 } from "./types.js";
-import { ChangedFile } from "./changed-file.js";
-import { ValidatorSettingsOutput } from "./settings.js";
-import { renderValidationMessage } from "./lib/output-renderer.js";
+import { ValidatorSettingsOutput } from "./validator-settings.js";
 
 export class PR {
   constructor(

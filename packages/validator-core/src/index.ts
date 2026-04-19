@@ -3,6 +3,6 @@ export {
   validatorSettingsSchemaInput,
   validatorSettingsSchemaOutput,
   loadValidatorSettings,
-} from "./settings.js";
-export type { ValidatorSettingsOutput, ValidatorSettingsInput } from "./settings.js";
+} from "./validator-settings.js";
+export type { ValidatorSettingsOutput, ValidatorSettingsInput } from "./validator-settings.js";
 export type { ValidationSummary } from "./types.js";

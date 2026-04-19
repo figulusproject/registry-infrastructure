@@ -1,6 +1,4 @@
-import { RegistrySettings } from "@figulus/schema";
-import { Helpers, RegistryValidator } from "../registry-validator.js";
-import { ValidatorSettingsOutput } from "../settings.js";
+import { RegistryValidator } from "../registry-validator.js";
 import {
   ValidationError,
   createError
