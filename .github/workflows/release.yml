@@ -24,6 +24,10 @@ jobs:
       - name: Run npm ci
         run: npm ci
 
+      - name: Build validator-core
+        run: npm run build
+        working-directory: packages/validator-core
+
       - name: Build validator-bundled
         run: npm run build
         working-directory: packages/validator-bundled
