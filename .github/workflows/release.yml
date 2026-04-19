@@ -1,0 +1,170 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*-alpha'
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run npm ci
+        run: npm ci
+
+      - name: Build validator-bundled
+        run: npm run build
+        working-directory: packages/validator-bundled
+
+      - name: Verify bundle hash
+        run: |
+          FRESH=$(sha256sum packages/validator-bundled/dist/validator-bundled.js | awk '{print $1}')
+          COMMITTED=$(cat packages/validator-bundled/dist/validator-bundled.js.sha256)
+          if [ "$FRESH" != "$COMMITTED" ]; then
+            echo "ERROR: validator-bundled.js is stale. Run 'npm run build' in packages/validator-bundled/ and commit the updated .sha256 file before releasing."
+            exit 1
+          fi
+          echo "Bundle hash verified: $FRESH"
+
+  publish-npm:
+    needs: [check]
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 24 with registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm to latest
+        run: npm install -g npm@latest
+
+      - name: Run npm ci
+        run: npm ci
+
+      - name: Build validator-node
+        run: npm run build
+        working-directory: packages/validator-node
+
+      # Trusted publishing via OIDC — no token needed. Configure at https://www.npmjs.com/package/@figulus/validator-node/access before first use.
+      - name: Publish to npm
+        run: npm publish --access public
+        working-directory: packages/validator-node
+
+  release-binaries:
+    needs: [check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Build validator-goja
+        run: |
+          cd packages/validator-goja
+          go generate ./lib
+          cd ../..
+          mkdir -p dist
+          for TARGET in linux/amd64 linux/arm64 darwin/arm64; do
+            OS=${TARGET%/*}
+            ARCH=${TARGET#*/}
+            cd packages/validator-goja
+            GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
+              -o ../../dist/validator-goja-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH} .
+            cd ../..
+          done
+
+      - name: Build local-registry
+        run: |
+          for TARGET in linux/amd64 linux/arm64 darwin/arm64; do
+            OS=${TARGET%/*}
+            ARCH=${TARGET#*/}
+            cd packages/local-registry
+            GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
+              -o ../../dist/local-registry-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH} .
+            cd ../..
+          done
+
+      - name: Package binaries
+        run: |
+          for TARGET in linux/amd64 linux/arm64 darwin/arm64; do
+            OS=${TARGET%/*}
+            ARCH=${TARGET#*/}
+            ARCHIVE="dist/figulus-registry-infrastructure-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH}.tar.gz"
+            tar -czf "$ARCHIVE" \
+              -C dist \
+              "validator-goja-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH}" \
+              "local-registry-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH}"
+          done
+
+      - name: Sign archives
+        run: |
+          for archive in dist/*.tar.gz; do
+            cosign sign-blob --yes \
+              --output-signature "${archive}.sig" \
+              --output-certificate "${archive}.cert" \
+              "${archive}"
+          done
+
+      - name: Extract release notes
+        id: release-notes
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            VERSION="${{ steps.version.outputs.VERSION }}"
+            NOTES=$(awk "/^## \[${VERSION}\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2)
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine pre-release
+        id: prerelease
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+            echo "value=true" >> $GITHUB_OUTPUT
+          else
+            echo "value=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sig
+            dist/*.tar.gz.cert
+          body: ${{ steps.release-notes.outputs.notes }}
+          prerelease: ${{ steps.prerelease.outputs.value }}

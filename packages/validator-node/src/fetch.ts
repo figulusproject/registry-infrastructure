@@ -7,7 +7,7 @@ import {
 import { up } from "up-fetch";
 import { ZodType } from "zod";
 import { validatorSettings } from "./validator-settings.js";
-import { validatorSettingsDefaults } from "../../validator-core/dist/validator-settings.js";
+import { validatorSettingsDefaults } from "@figulus/validator-core";
 
 const upfetch = up(fetch);
 
