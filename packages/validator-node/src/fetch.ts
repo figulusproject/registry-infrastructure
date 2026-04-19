@@ -9,8 +9,7 @@ import { settings } from "./settings.js";
 
 const upfetch = up(fetch);
 
-function buildUrl(
-  baseUrl: string,
+function buildPath(
   routeConfig: any,
   params?: Record<string, string | number | boolean>
 ): string {
@@ -40,10 +39,8 @@ function buildUrl(
     });
   }
 
-  const url =
-    (baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`) + path.replace(/^\//, "");
   const query = queryParams.toString();
-  return query ? `${url}?${query}` : url;
+  return query ? `${path}?${query}` : path;
 }
 
 function getResponseSchema<T = any>(
@@ -73,7 +70,8 @@ async function fetchFromRegistry<T>(params: {
     schema?: ZodType<T>;
 }) {
     const baseUrl = params.baseUrl || settings.registryRepo.url;
-    const url = (baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`) + params.route;
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    const url = cleanBase + params.route;
 
     let headers = {
         ...params.additionalHeaders,
@@ -85,6 +83,8 @@ async function fetchFromRegistry<T>(params: {
             "Authorization": `Bearer ${settings.registryRepo.accessToken}`
         }
     }
+
+    console.log("Fetching from:", url)
 
     const res = await upfetch(url, {
         headers,
@@ -98,11 +98,12 @@ async function fetchFromRegistry<T>(params: {
 
 export async function getAllPRs() {
     const schema = getResponseSchema(getAllPRsRouteSchema);
-    const route = buildUrl(settings.registryRepo.url, getAllPRsRouteSchema, {
+    const route = buildPath(getAllPRsRouteSchema, {
         state: "all",
         per_page: 100,
     });
 
+    console.log(route)
     return await fetchFromRegistry({
         route,
         schema,
@@ -115,10 +116,11 @@ export async function getPRFiles(prUrl: string) {
         throw new Error(`Invalid PR URL: ${prUrl}`);
 
     const schema = getResponseSchema(getPRFilesRouteSchema);
-    const route = buildUrl(settings.registryRepo.url, getPRFilesRouteSchema, {
+    const route = buildPath(getPRFilesRouteSchema, {
         prNumber,
     });
 
+    console.log(route)
     return await fetchFromRegistry({
         route,
         schema,
@@ -127,16 +129,21 @@ export async function getPRFiles(prUrl: string) {
 
 export async function getHead(filePath: string, branch?: string) {
     const schema = getResponseSchema(getFileContentsRouteSchema, 200);
-    const route = buildUrl(settings.registryRepo.url, getFileContentsRouteSchema, {
+    const route = buildPath(getFileContentsRouteSchema, {
         filePath,
         ref: branch || "main",
     });
 
-    return await fetchFromRegistry<string>({
+    console.log(route)
+
+    const res = await fetchFromRegistry<any>({
         route,
-        additionalHeaders: {
-            "Accept": "application/vnd.github.v3.raw",
-        },
         schema,
     });
+
+    if (typeof res === "string") return res;
+    if (res.content && res.encoding === "base64") {
+        return Buffer.from(res.content, "base64").toString("utf-8");
+    }
+    throw new Error(`Unexpected response format from getHead: ${JSON.stringify(res)}`);
 }
