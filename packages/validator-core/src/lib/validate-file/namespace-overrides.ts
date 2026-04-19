@@ -13,10 +13,10 @@ import {
   validatePushLimitConstraints,
 } from "../validate-push-limit-constraints.js";
 
-export function validateNamespaceOverrides(
+export async function validateNamespaceOverrides(
   file: ChangedFile,
   fileType: FileTypeNamespaceOverrides,
-): ValidationResult {
+): Promise<ValidationResult> {
   const { registry, prInfo } = file.pr;
   if (!registry.isMaintainer(prInfo.author)) {
     return {
@@ -45,8 +45,8 @@ export function validateNamespaceOverrides(
 
       for (const override of overrides) {
         if (override.pushLimit) {
-          const constraints = getPushLimitConstraintsForMaintainer(
-            registry.settings,
+          const constraints = await getPushLimitConstraintsForMaintainer(
+            registry,
             override.pushLimit.unit,
           );
           const error = validatePushLimitConstraints(

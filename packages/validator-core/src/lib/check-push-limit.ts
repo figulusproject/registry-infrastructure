@@ -1,5 +1,6 @@
-import { Helpers } from "../registry-validator.js";
-import { SettingsOutput } from "../settings.js";
+import { RegistrySettings } from "@figulus/schema";
+import { Helpers, RegistryValidator } from "../registry-validator.js";
+import { ValidatorSettingsOutput } from "../settings.js";
 import {
   ValidationError,
   createError
@@ -13,9 +14,11 @@ import { getNamespaceEditorEntry } from "./namespace.js";
 export async function checkPushLimit(
   prAuthor: string,
   namespace: string,
-  helpers: Helpers,
-  settings: SettingsOutput,
+  registryValidator: RegistryValidator,
 ): Promise<ValidationError | null> {
+  const { getRegistrySettings, helpers } = registryValidator;
+  const registrySettings = await getRegistrySettings();
+
   const namespaceMetadata = await getNamespaceMetadataFromHead(
     namespace,
     helpers,
@@ -26,8 +29,8 @@ export async function checkPushLimit(
   if (!editorEntry) return null;
 
   let editorLimit = editorEntry.pushLimit || {
-    unit: settings.pushLimits.default.unit,
-    value: settings.pushLimits.default.pushes,
+    unit: registrySettings.pushLimits.default.unit,
+    value: registrySettings.pushLimits.default.pushes,
   };
 
   const overrides = await getPushLimitOverridesFromHead(helpers);

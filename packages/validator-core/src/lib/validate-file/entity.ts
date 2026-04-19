@@ -19,13 +19,11 @@ export async function validateEntity(
   type: FileTypeEntity,
 ): Promise<ValidationResult> {
   const { registry, prInfo } = file.pr;
-  const { settings, helpers } = registry;
-  const { fs } = helpers;
 
   const namespace = file.getNamespace(type);
 
   const isAllowedToChangeEntityFile = async () => {
-    if (registry.isNamespaceRestricted(namespace)) {
+    if (await registry.isNamespaceRestricted(namespace)) {
       if (!registry.isMaintainer(prInfo.author)) {
         return {
           success: false,
@@ -66,8 +64,7 @@ export async function validateEntity(
       const pushLimitError = await checkPushLimit(
         prInfo.author,
         namespace,
-        helpers,
-        settings,
+        registry,
       );
       if (pushLimitError) {
         return {

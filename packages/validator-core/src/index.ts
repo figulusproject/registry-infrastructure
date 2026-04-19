@@ -1,8 +1,8 @@
 export { Helpers, RegistryValidator } from "./registry-validator.js";
 export {
-  settingsSchemaInput,
-  settingsSchemaOutput,
-  loadSettings,
+  validatorSettingsSchemaInput,
+  validatorSettingsSchemaOutput,
+  loadValidatorSettings,
 } from "./settings.js";
-export type { SettingsOutput, SettingsInput } from "./settings.js";
+export type { ValidatorSettingsOutput, ValidatorSettingsInput } from "./settings.js";
 export type { ValidationSummary } from "./types.js";

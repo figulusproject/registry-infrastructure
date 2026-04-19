@@ -1,5 +1,6 @@
+import { loadRegistrySettings, RegistrySettings, registrySettingsPartialSchema } from "@figulus/schema";
 import { PR } from "./pr.js";
-import { loadSettings, SettingsOutput, SettingsInput } from "./settings.js";
+import { loadValidatorSettings, ValidatorSettingsOutput, ValidatorSettingsInput } from "./settings.js";
 import { PullRequestInfo } from "./types.js";
 
 export interface Helpers {
@@ -17,6 +18,7 @@ export interface Helpers {
     readFileAsUtf8: (path: string) => string;
   };
   git: {
+    getSettings: () => Promise<string>;
     showHead: (filePath: string, branch?: string) => Promise<string>;
     getAllPRs: () => Promise<
       {
@@ -34,24 +36,36 @@ export interface Helpers {
 }
 
 export class RegistryValidator {
-  public settings: SettingsOutput;
+  public validatorSettings: ValidatorSettingsOutput;
+  private registrySettings: RegistrySettings|undefined;
 
   constructor(
     public helpers: Helpers,
-    settingsInput: SettingsInput,
+    settingsInput: ValidatorSettingsInput,
   ) {
-    this.settings = loadSettings(settingsInput);
+    this.validatorSettings = loadValidatorSettings(settingsInput);
+  }
+
+  public async getRegistrySettings(): Promise<RegistrySettings> {
+    if(!this.registrySettings) {
+      const res = await this.helpers.git.getSettings();
+      const parsed = registrySettingsPartialSchema.parse(JSON.parse(res));
+      this.registrySettings = loadRegistrySettings(parsed);
+    }
+    return this.registrySettings;
   }
 
   public async validatePr(prInfo: PullRequestInfo) {
     return await new PR(prInfo, this).validate();
   }
 
-  public isMaintainer(user: string): boolean {
-    return this.settings.registryMaintainers.includes(user);
+  public async isMaintainer(user: string): Promise<boolean> {
+    const registrySettings = await this.getRegistrySettings();
+    return registrySettings.registryMaintainers.includes(user);
   }
 
-  public isNamespaceRestricted(namespace: string): boolean {
-    return this.settings.restrictedNamespaces.includes(namespace);
+  public async isNamespaceRestricted(namespace: string): Promise<boolean> {
+    const registrySettings = await this.getRegistrySettings();
+    return registrySettings.restrictedNamespaces.includes(namespace);
   }
 }

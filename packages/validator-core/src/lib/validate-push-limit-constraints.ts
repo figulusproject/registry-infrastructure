@@ -1,4 +1,4 @@
-import { SettingsOutput } from "../settings.js";
+import { RegistryValidator } from "../registry-validator.js";
 import {
   ValidationError,
   createError
@@ -22,16 +22,18 @@ export function validatePushLimitConstraints(
   return null;
 }
 
-export function getPushLimitConstraintsForEditor(
-  settings: SettingsOutput,
+export async function getPushLimitConstraintsForEditor(
+  registry: RegistryValidator,
   unit: "daily" | "weekly",
-): { min: number; max: number } {
+): Promise<{ min: number; max: number }> {
+  const settings = await registry.getRegistrySettings();
   return settings.pushLimits.overridesSetBy.namespaceOwners[unit];
 }
 
-export function getPushLimitConstraintsForMaintainer(
-  settings: SettingsOutput,
+export async function getPushLimitConstraintsForMaintainer(
+  registry: RegistryValidator,
   unit: "daily" | "weekly",
-): { min: number; max: number } {
+): Promise<{ min: number; max: number }> {
+  const settings = await registry.getRegistrySettings();
   return settings.pushLimits.overridesSetBy.registryMaintainers[unit];
 }

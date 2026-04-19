@@ -30,7 +30,7 @@ export function parseSchema(
 
 export function parseFileJson(file: ChangedFile): any {
   try {
-    const { settings, helpers } = file.pr.registry;
+    const { validatorSettings: settings, helpers } = file.pr.registry;
     const { fs } = helpers;
 
     const fullPath = fs.resolvePath(settings.repoRoot, file.path);

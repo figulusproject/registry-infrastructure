@@ -28,7 +28,7 @@ export function validateBlobReferences(
     if (!contentHash || !extension) continue;
 
     const blobPath = registry.helpers.fs.resolvePath(
-      registry.settings.repoRoot,
+      registry.validatorSettings.repoRoot,
       `blobs/${namespace}/${contentHash}.${extension}`,
     );
 

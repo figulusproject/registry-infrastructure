@@ -9,7 +9,7 @@ import {
 } from "../../validation-result.js";
 
 export function validateBlob(file: ChangedFile): ValidationResult {
-  const { helpers, settings } = file.pr.registry;
+  const { helpers, validatorSettings } = file.pr.registry;
 
   const fileName = helpers.fs.splitPath(file.path).pop();
   if (!fileName) {
@@ -50,7 +50,7 @@ export function validateBlob(file: ChangedFile): ValidationResult {
   }
 
   try {
-    const path = helpers.fs.resolvePath(settings.repoRoot, file.path);
+    const path = helpers.fs.resolvePath(validatorSettings.repoRoot, file.path);
     const content = helpers.fs.readFileAsUtf8(path);
     const actualHash = helpers.crypto.createSha256HexHash(content);
 

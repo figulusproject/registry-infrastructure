@@ -1,17 +1,17 @@
 import { RegistryValidator } from "../registry-validator.js";
 
-export function isRegistryMaintainer(
+export async function isRegistryMaintainer(
   user: string,
   registry: RegistryValidator,
-): boolean {
-  const { registryMaintainers } = registry.settings;
-  return registryMaintainers.includes(user);
+): Promise<boolean> {
+  const settings = await registry.getRegistrySettings();
+  return settings.registryMaintainers.includes(user);
 }
 
-export function isReservedNamespace(
+export async function isReservedNamespace(
   namespace: string,
   registry: RegistryValidator,
-): boolean {
-  const { restrictedNamespaces } = registry.settings;
-  return restrictedNamespaces.includes(namespace);
+): Promise<boolean> {
+  const settings = await registry.getRegistrySettings();
+  return settings.restrictedNamespaces.includes(namespace);
 }

@@ -5,7 +5,7 @@ import {
   FileValidationResult,
 } from "./types.js";
 import { ChangedFile } from "./changed-file.js";
-import { SettingsOutput } from "./settings.js";
+import { ValidatorSettingsOutput } from "./settings.js";
 import { renderValidationMessage } from "./lib/output-renderer.js";
 
 export class PR {
@@ -18,8 +18,8 @@ export class PR {
     return this.prInfo.author;
   }
 
-  public getSettings(): SettingsOutput {
-    return this.registry.settings;
+  public getSettings(): ValidatorSettingsOutput {
+    return this.registry.validatorSettings;
   }
 
   public getHelpers(): Helpers {

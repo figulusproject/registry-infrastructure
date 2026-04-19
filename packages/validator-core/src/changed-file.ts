@@ -138,7 +138,7 @@ export class ChangedFile {
   }
 
   public parseJson(): any {
-    const { settings, helpers } = this.pr.registry;
+    const { validatorSettings: settings, helpers } = this.pr.registry;
     const { fs } = helpers;
 
     const fullPath = fs.resolvePath(settings.repoRoot, this.path);
@@ -180,7 +180,7 @@ export class ChangedFile {
         break;
       case "verified":
       case "limits":
-        result = validateNamespaceOverrides(this, fileType);
+        result = await validateNamespaceOverrides(this, fileType);
         break;
     }
 

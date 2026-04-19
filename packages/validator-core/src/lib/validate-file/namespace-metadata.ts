@@ -19,7 +19,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
 
   const namespace = file.getNamespace("namespace");
 
-  if (registry.isNamespaceRestricted(namespace)) {
+  if (await registry.isNamespaceRestricted(namespace)) {
     if (!registry.isMaintainer(prInfo.author))
       return {
         success: false,
@@ -33,14 +33,14 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
 
   const prAuthor = file.pr.prInfo.author;
 
-  const validatePushLimitsInMetadata = (data: any): ValidationError[] => {
+  const validatePushLimitsInMetadata = async (data: any): Promise<ValidationError[]> => {
     const errors: ValidationError[] = [];
     const editors = data.editors || [];
 
     for (const editor of editors) {
       if (editor.pushLimit) {
-        const constraints = getPushLimitConstraintsForEditor(
-          registry.settings,
+        const constraints = await getPushLimitConstraintsForEditor(
+          registry,
           editor.pushLimit.unit,
         );
         const error = validatePushLimitConstraints(
@@ -99,7 +99,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
           const schemaResult = parseSchema(data, namespaceMetadataSchema);
           if (!schemaResult.success) return schemaResult;
 
-          const pushLimitErrors = validatePushLimitsInMetadata(data);
+          const pushLimitErrors = await validatePushLimitsInMetadata(data);
           if (pushLimitErrors.length > 0) {
             return { success: false, errors: pushLimitErrors };
           }
@@ -139,7 +139,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
     if (!schemaResult.success) return schemaResult;
 
     // Check push limit constraints
-    const pushLimitErrors = validatePushLimitsInMetadata(data);
+    const pushLimitErrors = await validatePushLimitsInMetadata(data);
     if (pushLimitErrors.length > 0) {
       return { success: false, errors: pushLimitErrors };
     }
