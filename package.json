@@ -6,7 +6,8 @@
   "type": "module",
   "workspaces": [
     "packages/validator-core",
-    "packages/validator-node"
+    "packages/validator-node",
+    "packages/validator-bundled"
   ],
   "dependencies": {
     "@figulus/schema": "^0.4.0-alpha-dev",

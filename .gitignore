@@ -1,5 +1,6 @@
 node_modules
 packages/*/dist/**
+!packages/validator-bundled/dist/*.sha256
 .env
 .wrangler
 wrangler.toml.local
