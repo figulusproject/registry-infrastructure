@@ -40,17 +40,16 @@ func injectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 	// fs.readFileAsUtf8
 	fsObj.Set("readFileAsUtf8", func(call goja.FunctionCall) goja.Value {
 		if len(call.Arguments) < 1 {
-			return rejectPromise(rt, "readFileAsUtf8: missing path argument")
+			return rt.ToValue("")
 		}
 		path := call.Arguments[0].String()
-		fullPath := filepath.Join(repoRoot, path)
 
-		content, err := ioutil.ReadFile(fullPath)
+		content, err := ioutil.ReadFile(path)
 		if err != nil {
-			return rejectPromise(rt, fmt.Sprintf("readFileAsUtf8: %v", err))
+			return rt.ToValue("")
 		}
 
-		return resolvePromise(rt, rt.ToValue(string(content)))
+		return rt.ToValue(string(content))
 	})
 
 	// fs.fileOrDirExists

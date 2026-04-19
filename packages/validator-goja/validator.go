@@ -16,16 +16,10 @@ var validatorBundle string
 
 // ValidateRegistryChanges validates registry changes using the bundled validator
 func ValidateRegistryChanges(changedFiles []string, author string, repoRoot string, settingsJSON string) (*ValidationSummary, error) {
-	// Create a new Goja runtime
-	rt := goja.New()
-
 	// Start the event loop
 	loop := eventloop.NewEventLoop()
 	loop.Start()
 	defer loop.Stop()
-
-	// Inject settings as a global
-	rt.Set("__goSettings", settingsJSON)
 
 	// Parse localUsername from settingsJSON
 	localUsername := "admin"
@@ -36,35 +30,60 @@ func ValidateRegistryChanges(changedFiles []string, author string, repoRoot stri
 		}
 	}
 
-	// Inject helpers
-	if err := injectHelpers(rt, repoRoot, localUsername); err != nil {
-		return nil, fmt.Errorf("failed to inject helpers: %w", err)
-	}
+	// Variables to store setup results
+	var validateFn goja.Callable
+	var setupErr error
+	setupDone := make(chan struct{})
 
-	// Run the bundle
-	if _, err := rt.RunString(validatorBundle); err != nil {
-		return nil, fmt.Errorf("failed to run bundle: %w", err)
-	}
+	// First RunOnLoop: all setup happens on the loop's internal vm
+	loop.RunOnLoop(func(vm *goja.Runtime) {
+		defer close(setupDone)
 
-	// Get the validateRegistryChanges function
-	validateFn, ok := goja.AssertFunction(rt.Get("validateRegistryChanges"))
-	if !ok {
-		return nil, fmt.Errorf("validateRegistryChanges is not a function")
+		// Inject settings as a global
+		vm.Set("__goSettings", settingsJSON)
+
+		// Inject helpers
+		if err := injectHelpers(vm, repoRoot, localUsername); err != nil {
+			setupErr = fmt.Errorf("failed to inject helpers: %w", err)
+			return
+		}
+
+		// Run the bundle
+		if _, err := vm.RunString(validatorBundle); err != nil {
+			setupErr = fmt.Errorf("failed to run bundle: %w", err)
+			return
+		}
+
+		// Get the validateRegistryChanges function
+		var ok bool
+		validateFn, ok = goja.AssertFunction(vm.Get("validateRegistryChanges"))
+		if !ok {
+			setupErr = fmt.Errorf("validateRegistryChanges is not a function")
+			return
+		}
+	})
+
+	// Wait for setup to complete
+	<-setupDone
+
+	// Check for setup errors
+	if setupErr != nil {
+		return nil, setupErr
 	}
 
 	// Create channels for result and error
 	resultCh := make(chan string, 1)
 	errCh := make(chan error, 1)
 
-	// Run the validation in the event loop
+	// Second RunOnLoop: call the validation function
 	loop.RunOnLoop(func(vm *goja.Runtime) {
 		// Call the JS function
-		changedFilesArray := rt.NewArray()
+		changedFilesArray := vm.NewArray()
 		for i, file := range changedFiles {
-			changedFilesArray.Set(fmt.Sprintf("%d", i), rt.ToValue(file))
+			changedFilesArray.Set(fmt.Sprintf("%d", i), vm.ToValue(file))
 		}
 
-		promise, err := validateFn(goja.Undefined(), changedFilesArray, rt.ToValue(author))
+		promise, err := validateFn(goja.Undefined(), changedFilesArray, vm.ToValue(author))
 		if err != nil {
 			errCh <- fmt.Errorf("failed to call validateRegistryChanges: %w", err)
 			return
@@ -81,7 +100,7 @@ func ValidateRegistryChanges(changedFiles []string, author string, repoRoot stri
 		}
 
 		// Success callback
-		successCallback := rt.ToValue(func(call goja.FunctionCall) goja.Value {
+		successCallback := vm.ToValue(func(call goja.FunctionCall) goja.Value {
 			if len(call.Arguments) > 0 {
 				resultCh <- call.Arguments[0].String()
 			} else {
@@ -91,7 +110,7 @@ func ValidateRegistryChanges(changedFiles []string, author string, repoRoot stri
 		})
 
 		// Error callback
-		errorCallback := rt.ToValue(func(call goja.FunctionCall) goja.Value {
+		errorCallback := vm.ToValue(func(call goja.FunctionCall) goja.Value {
 			if len(call.Arguments) > 0 {
 				errCh <- fmt.Errorf("validation error: %v", call.Arguments[0])
 			} else {

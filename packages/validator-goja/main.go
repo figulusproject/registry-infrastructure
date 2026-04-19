@@ -43,15 +43,30 @@ func main() {
 	}
 
 	// Load settings
-	settingsJSON := "{}"
+	var settings map[string]interface{}
 	if *settingsFileFlag != "" {
 		content, err := ioutil.ReadFile(*settingsFileFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: failed to read settings file: %v\n", err)
 			os.Exit(1)
 		}
-		settingsJSON = string(content)
+		if err := json.Unmarshal(content, &settings); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: failed to parse settings file as JSON: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		settings = make(map[string]interface{})
 	}
+
+	// Ensure repoRoot is set in settings
+	settings["repoRoot"] = repoRoot
+
+	settingsBytes, err := json.Marshal(settings)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to marshal settings: %v\n", err)
+		os.Exit(1)
+	}
+	settingsJSON := string(settingsBytes)
 
 	// Run validation
 	summary, err := ValidateRegistryChanges(changedFiles, *authorFlag, repoRoot, settingsJSON)
