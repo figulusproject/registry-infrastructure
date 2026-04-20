@@ -39,6 +39,7 @@ const argsSchema = z
       .string()
       .array()
       .min(requiredArgsLength)
+      .refine((c) => console.log("DEBUG:", c))
       .transform(parseCliArgs)
       .pipe(parsedArgsSchema)
   );

@@ -1,6 +1,6 @@
 {
   "name": "@figulus/registry-infrastructure",
-  "version": "0.5.0-alpha-rc3",
+  "version": "0.5.0-alpha-rc3_debug_logging",
   "private": true,
   "description": "Infrastructure for the Figulus Registry",
   "type": "module",
