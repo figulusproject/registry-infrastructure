@@ -49,8 +49,11 @@ export class RegistryValidator {
   public async getRegistrySettings(): Promise<RegistrySettings> {
     if(!this.registrySettings) {
       const res = await this.helpers.registry.getSettings();
+      console.log("DEBUG 2:", res)
       const parsed = registrySettingsPartialSchema.parse(JSON.parse(res));
+      console.log("DEBUG 3:", parsed)
       this.registrySettings = loadRegistrySettings(parsed);
+      console.log("DEBUG 4:", this.registrySettings)
     }
     return this.registrySettings;
   }
