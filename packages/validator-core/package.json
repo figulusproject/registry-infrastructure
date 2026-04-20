@@ -4,6 +4,10 @@
   "description": "Core logic for the Figulus Validator",
   "type": "module",
   "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/figulusproject/registry-infrastructure"
+  },
   "exports": {
     ".": "./dist/index.js"
   },
