@@ -86,7 +86,7 @@ async function fetchFromRegistry<T>(params: {
       const baseUrl = baseUrlOverride || params.baseUrl || validatorSettings.registry.url;
       const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
       const url = cleanBase + params.route;
-      
+
       try {
         return await upfetch(url, {
           headers,
@@ -115,9 +115,11 @@ async function fetchFromRegistry<T>(params: {
 }
 
 export async function getRegistrySettings() {
-    return await fetchFromRegistry<string>({
+    const r = await fetchFromRegistry<string>({
         route: buildPath(fetchRegistrySettingsRouteSchema),
     });
+    console.log("DEBUG:", r);
+    return r;
 }
 
 export async function getAllPRs() {
