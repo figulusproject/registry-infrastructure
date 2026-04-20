@@ -1,20 +1,26 @@
 import z from "zod";
 import { stringifiedStringArraySchema, validFilePathSchema } from "./types.js";
 
-const parseCliArgs = (args: string[]) =>
-  Object.fromEntries(
-    args
-      .map((arg, i, arr) => {
-        const match = arg.match(/^--([^=]+)(?:=(.*))?$/);
-        if (!match) return null;
-        if (match[2] !== undefined) return match;
-        const nextArg = arr[i + 1];
-        if (nextArg && !nextArg.startsWith("--")) return [arg, match[1], nextArg];
-        return null;
-      })
+const parseCliArgs = (args: string[]) => {
+  const normalized: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    const keyMatch = arg.match(/^--([^=]+)$/);
+    if (keyMatch && i + 1 < args.length && !args[i + 1].startsWith("--")) {
+      normalized.push(`${arg}=${args[i + 1]}`);
+      i++;
+    } else {
+      normalized.push(arg);
+    }
+  }
+
+  return Object.fromEntries(
+    normalized
+      .map((arg) => arg.match(/^--([^=]+)=(.*)$/))
       .filter((match): match is RegExpMatchArray => match !== null)
       .map(([, key, value]) => [key.toLowerCase(), value])
   );
+};
 
 const parsedArgsSchema = z.object({
     "changed-files": stringifiedStringArraySchema.pipe(z.array(validFilePathSchema)),
@@ -39,7 +45,6 @@ const argsSchema = z
       .string()
       .array()
       .min(requiredArgsLength)
-      .refine((c) => console.log("DEBUG:", c))
       .transform(parseCliArgs)
       .pipe(parsedArgsSchema)
   );

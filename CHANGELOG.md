@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0-alpha-rc4] — 2026-04-20
+
+### Fixed
+
+- **`@figulus/validator-node` CLI arg parser** — fixed implementation to correctly normalize space-separated arguments to equals format, resolving validation failures that occurred in rc3 when using either syntax.
+
+---
+
 ## [0.5.0-alpha-rc3] — 2026-04-20
 
 ### Changed
