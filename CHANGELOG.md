@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0-alpha-rc3] — 2026-04-20
+
+### Changed
+
+- **Release workflow** — fixed npm publish to apply `--tag` flag to both `@figulus/validator-core` and `@figulus/validator-node`, ensuring prerelease versions (alpha, rc, dev) are correctly tagged in npm registry instead of failing. Reordered npm job steps to determine tag once before publishing both packages.
+- **Release notes extraction** — updated GitHub release notes extraction to use file-based pattern (`body_path`) instead of variable passing, matching the figulus workflow for more robust and reliable changelog integration.
+- **`@figulus/validator-node` CLI** — arg parser now supports both space-separated (`--key value`) and equals-separated (`--key=value`) argument formats. Regex pattern handles optional equals and lookahead to next arg for value detection.
+
+---
+
 ## [0.5.0-alpha-rc2] — 2026-04-20
 
 ### Changed

@@ -169,16 +169,18 @@ jobs:
               "${archive}"
           done
 
-      - name: Extract release notes
+      - name: Extract release notes from CHANGELOG.md
         id: release-notes
         run: |
-          if [ -f CHANGELOG.md ]; then
-            VERSION="${{ steps.version.outputs.VERSION }}"
-            NOTES=$(awk "/^## \[${VERSION}\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2)
-            echo "notes<<EOF" >> $GITHUB_OUTPUT
-            echo "$NOTES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          # Extract section between matching heading and next heading
+          awk "/^## \[${TAG_VERSION}\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md \
+            | sed '/^[[:space:]]*$/d; 1s/^[[:space:]]*//' \
+            > release_notes.txt
+          if [ ! -s release_notes.txt ]; then
+            echo "See [CHANGELOG.md](CHANGELOG.md) for details." > release_notes.txt
           fi
+          echo "NOTES_FILE=release_notes.txt" >> "$GITHUB_OUTPUT"
 
       - name: Determine pre-release
         id: prerelease
@@ -193,9 +195,9 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ steps.prerelease.outputs.value }}
+          body_path: release_notes.txt
           files: |
             dist/*.tar.gz
             dist/*.tar.gz.sig
             dist/*.tar.gz.cert
-          body: ${{ steps.release-notes.outputs.notes }}
-          prerelease: ${{ steps.prerelease.outputs.value }}

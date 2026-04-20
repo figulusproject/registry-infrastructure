@@ -4,7 +4,14 @@ import { stringifiedStringArraySchema, validFilePathSchema } from "./types.js";
 const parseCliArgs = (args: string[]) =>
   Object.fromEntries(
     args
-      .map((arg) => arg.match(/^--([^=]+)=(.*)$/))
+      .map((arg, i, arr) => {
+        const match = arg.match(/^--([^=]+)(?:=(.*))?$/);
+        if (!match) return null;
+        if (match[2] !== undefined) return match;
+        const nextArg = arr[i + 1];
+        if (nextArg && !nextArg.startsWith("--")) return [arg, match[1], nextArg];
+        return null;
+      })
       .filter((match): match is RegExpMatchArray => match !== null)
       .map(([, key, value]) => [key.toLowerCase(), value])
   );
