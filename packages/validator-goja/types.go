@@ -1,6 +1,6 @@
 package main
 
-import "github.com/figulusproject/registry-infrastructure/validator-goja/lib"
+import "github.com/figulusproject/registry-infrastructure/packages/validator-goja/lib"
 
 // Type aliases for backward compatibility
 type ValidationError = lib.ValidationError

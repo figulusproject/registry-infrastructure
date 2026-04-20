@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/figulusproject/registry-infrastructure/validator-goja/lib"
+	"github.com/figulusproject/registry-infrastructure/packages/validator-goja/lib"
 )
 
 // ValidateRegistryChanges is a wrapper around lib.ValidateRegistryChanges
