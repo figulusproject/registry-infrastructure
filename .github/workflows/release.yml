@@ -69,11 +69,6 @@ jobs:
         run: npm run build
         working-directory: packages/validator-core
 
-      # Trusted publishing via OIDC — no token needed. Configure at https://www.npmjs.com/package/@figulus/validator-core/access before first use.
-      - name: Publish validator-core to npm
-        run: npm publish --access public
-        working-directory: packages/validator-core
-
       - name: Build validator-node
         run: npm run build
         working-directory: packages/validator-node
@@ -91,8 +86,13 @@ jobs:
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
+      # Trusted publishing via OIDC — no token needed. Configure at https://www.npmjs.com/package/@figulus/validator-core/access before first use.
+      - name: Publish validator-core to npm
+        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }}
+        working-directory: packages/validator-core
+
       # Trusted publishing via OIDC — no token needed. Configure at https://www.npmjs.com/package/@figulus/validator-node/access before first use.
-      - name: Publish to npm
+      - name: Publish validator-node to npm
         run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }}
         working-directory: packages/validator-node
 
