@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0-alpha-rc6] — 2026-04-20
+
+### Fixed
+
+- **`@figulus/validator-core` push limit check** — fixed method invocation in `checkPushLimit` where `getRegistrySettings` was being destructured and called as a standalone function, losing its `this` context. Now called as a method on the `registryValidator` instance, resolving "Cannot read properties of undefined" errors when checking push limits.
+
+---
+
 ## [0.5.0-alpha-rc5] — 2026-04-20
 
 ### Fixed

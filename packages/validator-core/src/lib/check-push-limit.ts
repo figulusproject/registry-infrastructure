@@ -14,8 +14,8 @@ export async function checkPushLimit(
   namespace: string,
   registryValidator: RegistryValidator,
 ): Promise<ValidationError | null> {
-  const { getRegistrySettings, helpers } = registryValidator;
-  const registrySettings = await getRegistrySettings();
+  const { helpers } = registryValidator;
+  const registrySettings = await registryValidator.getRegistrySettings();
 
   const namespaceMetadata = await getNamespaceMetadataFromHead(
     namespace,

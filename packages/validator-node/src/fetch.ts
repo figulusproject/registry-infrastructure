@@ -115,11 +115,9 @@ async function fetchFromRegistry<T>(params: {
 }
 
 export async function getRegistrySettings() {
-    const r = await fetchFromRegistry<string>({
+    return await fetchFromRegistry<string>({
         route: buildPath(fetchRegistrySettingsRouteSchema),
     });
-    console.log("DEBUG:", r);
-    return r;
 }
 
 export async function getAllPRs() {
