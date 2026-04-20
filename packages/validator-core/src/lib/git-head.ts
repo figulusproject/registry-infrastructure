@@ -14,7 +14,7 @@ async function getFileFromHeadAndParse(
   helpers: Helpers,
 ) {
   try {
-    const headContent = await helpers.git.showHead(filePath);
+    const headContent = await helpers.registry.showHead(filePath);
     const data = parseJSON(headContent);
     const result = schema.safeParse(data);
     return result.success ? data : null;

@@ -15,7 +15,6 @@ import {
 
 export async function validateNamespaceMetadata(file: ChangedFile): Promise<ValidationResult> {
   const { registry, prInfo } = file.pr;
-  const { git } = registry.helpers;
 
   const namespace = file.getNamespace("namespace");
 
@@ -58,7 +57,7 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
   if (namespace) {
     try {
       try {
-        const headContent = await git.showHead(file.path);
+        const headContent = await registry.helpers.registry.showHead(file.path);
         const headData = parseJSON(headContent);
 
         const headEditors = headData.editors || [];

@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@figulus/validator-core": "^0.5.0-alpha-dev-17",
+    "@figulus/validator-core": "^0.5.0-alpha-dev-18",
     "@types/node": "^25.6.0",
     "dotenv": "^17.4.2",
     "node": "^25.9.0",

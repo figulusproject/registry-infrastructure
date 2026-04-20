@@ -19,7 +19,7 @@ export const helpers: Helpers = {
         fileOrDirExists: (path: string) => existsSync(path),
         readFileAsUtf8: (path: string) => readFileSync(path).toString('utf-8'),
     },
-    git: {
+    registry: {
         showHead: getHead,
         getAllPRs: getAllPRs,
         getPRFiles: getPRFiles,

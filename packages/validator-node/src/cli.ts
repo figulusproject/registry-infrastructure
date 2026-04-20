@@ -13,6 +13,7 @@ const parsedArgsSchema = z.object({
     "changed-files": stringifiedStringArraySchema.pipe(z.array(validFilePathSchema)),
     "author": z.string(),
     "repo-root": validFilePathSchema.optional(),
+    "registry-url": z.url().optional(),
     "settings-file": validFilePathSchema.optional(),
     "output-file": z.string().optional(),
 });

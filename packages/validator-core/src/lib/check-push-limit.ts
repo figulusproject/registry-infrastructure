@@ -64,13 +64,13 @@ export async function checkPushLimit(
       `blobs/${namespace}/`,
     ];
 
-    const prs = (await helpers.git.getAllPRs()).filter(
+    const prs = (await helpers.registry.getAllPRs()).filter(
       (pr) => pr.user.id === prAuthor && new Date(pr.created_at) >= startDate,
     );
 
     let count = 0;
     for (const pr of prs) {
-      const files = await helpers.git.getPRFiles(pr.url);
+      const files = await helpers.registry.getPRFiles(pr.url);
 
       const touchesNamespace = files.some((f: any) =>
         filePrefixes.some((prefix) => f.filename.startsWith(prefix)),

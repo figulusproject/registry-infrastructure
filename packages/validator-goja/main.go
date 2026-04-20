@@ -15,6 +15,7 @@ func main() {
 	repoRootFlag := flag.String("repo-root", "", "path to repository root")
 	settingsFileFlag := flag.String("settings-file", "", "path to JSON settings file")
 	outputFileFlag := flag.String("output-file", "", "path to write JSON validation summary")
+	registryURLFlag := flag.String("registry-url", "", "override registry URL")
 
 	flag.Parse()
 
@@ -60,6 +61,17 @@ func main() {
 
 	// Ensure repoRoot is set in settings
 	settings["repoRoot"] = repoRoot
+
+	// Override registry URL if provided
+	if *registryURLFlag != "" {
+		if registry, ok := settings["registry"].(map[string]interface{}); ok {
+			registry["url"] = *registryURLFlag
+		} else {
+			settings["registry"] = map[string]interface{}{
+				"url": *registryURLFlag,
+			}
+		}
+	}
 
 	settingsBytes, err := json.Marshal(settings)
 	if err != nil {

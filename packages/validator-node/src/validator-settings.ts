@@ -48,8 +48,17 @@ function loadEnv(): Partial<ValidatorSettingsInput> {
 const file = loadFile();
 const env = loadEnv();
 
-export const validatorSettings = loadValidatorSettings({
+const settingsBase: ValidatorSettingsInput = {
     repoRoot: args["repo-root"] || process.cwd(),
     ...file,
     ...env,
-});
+};
+
+const withCliOverrides: ValidatorSettingsInput = args["registry-url"] ? {
+    ...settingsBase,
+    registry: {
+        url: args["registry-url"]
+    }
+} : settingsBase;
+
+export const validatorSettings = loadValidatorSettings(withCliOverrides);

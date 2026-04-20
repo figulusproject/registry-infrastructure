@@ -17,7 +17,7 @@ export interface Helpers {
     fileOrDirExists: (path: string) => boolean;
     readFileAsUtf8: (path: string) => string;
   };
-  git: {
+  registry: {
     getSettings: () => Promise<string>;
     showHead: (filePath: string, branch?: string) => Promise<string>;
     getAllPRs: () => Promise<
@@ -48,7 +48,7 @@ export class RegistryValidator {
 
   public async getRegistrySettings(): Promise<RegistrySettings> {
     if(!this.registrySettings) {
-      const res = await this.helpers.git.getSettings();
+      const res = await this.helpers.registry.getSettings();
       const parsed = registrySettingsPartialSchema.parse(JSON.parse(res));
       this.registrySettings = loadRegistrySettings(parsed);
     }

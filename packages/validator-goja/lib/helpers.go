@@ -3,8 +3,10 @@ package lib
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,8 +33,19 @@ func rejectPromise(rt *goja.Runtime, msg string) goja.Value {
 }
 
 // InjectHelpers injects the __goHelpers object into the Goja runtime
-func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) error {
+func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string, settingsJSON string) error {
 	helpers := rt.NewObject()
+
+	// Parse registry URL from settings
+	registryURL := "https://registry.figulus.net"
+	var settings map[string]interface{}
+	if err := json.Unmarshal([]byte(settingsJSON), &settings); err == nil {
+		if registry, ok := settings["registry"].(map[string]interface{}); ok {
+			if url, ok := registry["url"].(string); ok {
+				registryURL = url
+			}
+		}
+	}
 
 	// fs object
 	fsObj := rt.NewObject()
@@ -44,7 +57,7 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 		}
 		path := call.Arguments[0].String()
 
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			return rt.ToValue("")
 		}
@@ -118,11 +131,36 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 
 	helpers.Set("crypto", cryptoObj)
 
-	// git object
-	gitObj := rt.NewObject()
+	// registry object
+	registryObj := rt.NewObject()
 
-	// git.showHead
-	gitObj.Set("showHead", func(call goja.FunctionCall) goja.Value {
+	// registry.getSettings
+	registryObj.Set("getSettings", func(call goja.FunctionCall) goja.Value {
+		client := &http.Client{
+			Timeout: 10 * time.Second,
+		}
+
+		url := registryURL + "/raw/refs/heads/main/settings.json"
+		resp, err := client.Get(url)
+		if err != nil {
+			return resolvePromise(rt, rt.ToValue("{}"))
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return resolvePromise(rt, rt.ToValue("{}"))
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return resolvePromise(rt, rt.ToValue("{}"))
+		}
+
+		return resolvePromise(rt, rt.ToValue(string(body)))
+	})
+
+	// registry.showHead
+	registryObj.Set("showHead", func(call goja.FunctionCall) goja.Value {
 		if len(call.Arguments) < 1 {
 			return rejectPromise(rt, "showHead: missing filePath argument")
 		}
@@ -161,8 +199,8 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 		return resolvePromise(rt, rt.ToValue(content))
 	})
 
-	// git.getAllPRs (returns commits as PR-shaped objects)
-	gitObj.Set("getAllPRs", func(call goja.FunctionCall) goja.Value {
+	// registry.getAllPRs (returns commits as PR-shaped objects)
+	registryObj.Set("getAllPRs", func(call goja.FunctionCall) goja.Value {
 		repo, err := git.PlainOpen(repoRoot)
 		if err != nil {
 			return rejectPromise(rt, fmt.Sprintf("getAllPRs: failed to open repo: %v", err))
@@ -203,8 +241,8 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 		return resolvePromise(rt, arr)
 	})
 
-	// git.getPRFiles
-	gitObj.Set("getPRFiles", func(call goja.FunctionCall) goja.Value {
+	// registry.getPRFiles
+	registryObj.Set("getPRFiles", func(call goja.FunctionCall) goja.Value {
 		if len(call.Arguments) < 1 {
 			return rejectPromise(rt, "getPRFiles: missing url argument")
 		}
@@ -267,7 +305,7 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 		return resolvePromise(rt, arr)
 	})
 
-	helpers.Set("git", gitObj)
+	helpers.Set("registry", registryObj)
 
 	// console object
 	consoleObj := rt.NewObject()

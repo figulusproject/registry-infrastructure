@@ -45,7 +45,7 @@ func ValidateRegistryChanges(changedFiles []string, author string, repoRoot stri
 		vm.Set("__goSettings", settingsJSON)
 
 		// Inject helpers
-		if err := InjectHelpers(vm, repoRoot, localUsername); err != nil {
+		if err := InjectHelpers(vm, repoRoot, localUsername, settingsJSON); err != nil {
 			setupErr = fmt.Errorf("failed to inject helpers: %w", err)
 			return
 		}
