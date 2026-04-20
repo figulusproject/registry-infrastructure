@@ -1,4 +1,4 @@
-module github.com/figulusproject/registry-infrastructure/validator-goja
+module github.com/figulusproject/registry-infrastructure/packages/validator-goja
 
 go 1.24.0
 

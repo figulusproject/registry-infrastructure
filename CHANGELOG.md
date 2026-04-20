@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0-alpha-rc7] — 2026-04-20
+
+### Changed
+
+- **`validator-goja` module path** — updated module declaration from `github.com/figulusproject/registry-infrastructure/validator-goja` to `github.com/figulusproject/registry-infrastructure/packages/validator-goja` to correctly reflect the submodule location in the monorepo. This enables proper Go module resolution for the packages in the registry-infrastructure repository.
+- **`local-registry` imports and dependencies** — updated to use the new `validator-goja` module path. Updated go.mod require and replace directives and import statements in handlers.go to reference the packages-prefixed module path.
+
+---
+
 ## [0.5.0-alpha-rc6] — 2026-04-20
 
 ### Fixed

@@ -3,7 +3,7 @@ module github.com/figulusproject/registry-infrastructure/local-registry
 go 1.24.0
 
 require (
-	github.com/figulusproject/registry-infrastructure/validator-goja v0.0.0
+	github.com/figulusproject/registry-infrastructure/packages/validator-goja v0.0.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-git/go-git/v5 v5.18.0
 )
@@ -36,4 +36,4 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-replace github.com/figulusproject/registry-infrastructure/validator-goja => ../validator-goja
+replace github.com/figulusproject/registry-infrastructure/packages/validator-goja => ../validator-goja
