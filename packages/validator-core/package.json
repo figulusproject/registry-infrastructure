@@ -1,6 +1,6 @@
 {
   "name": "@figulus/validator-core",
-  "version": "0.5.0-alpha-rc4",
+  "version": "0.5.0-alpha-rc4-debug-01",
   "description": "Core logic for the Figulus Validator",
   "type": "module",
   "main": "./dist/index.js",
