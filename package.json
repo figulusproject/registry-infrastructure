@@ -1,14 +1,20 @@
 {
   "name": "@figulus/registry-infrastructure",
-  "version": "0.5.0-alpha-dev-01",
+  "version": "0.5.0-alpha-rc2",
   "private": true,
   "description": "Infrastructure for the Figulus Registry",
   "type": "module",
+  "scripts": {
+    "set-versions": "npx tsx scripts/set-versions.ts"
+  },
   "workspaces": [
     "packages/validator-core",
     "packages/validator-node",
     "packages/validator-bundled"
   ],
-  "dependencies": {
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "node": "^25.9.0",
+    "zod": "^4.3.6"
   }
 }
