@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0-alpha-rc5] — 2026-04-20
+
+### Fixed
+
+- **`@figulus/validator-core` new namespace validation** — fixed 404 handling when adding new namespaces. Previously, when a namespace didn't exist in HEAD, the 404 error was caught as a parse error instead of falling through to new namespace validation logic. Now 404 errors (file not found) are distinguished from connection errors and rethrown immediately, allowing new namespace submissions to validate correctly.
+- **`@figulus/validator-node` fetch fallback** — fetch errors are now classified: 404 (file not found) throws immediately without attempting fallback registries, while connection errors still try the fallback. This prevents unnecessary fallback attempts when a file genuinely doesn't exist on the configured registry.
+
+---
+
 ## [0.5.0-alpha-rc4] — 2026-04-20
 
 ### Fixed

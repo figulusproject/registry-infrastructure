@@ -93,14 +93,15 @@ async function fetchFromRegistry<T>(params: {
           schema: params.schema,
         });
       } catch (error) {
+        if (error instanceof Error && error.message.includes("404"))
+          throw error;
+
         const fallbackUrl = validatorSettingsDefaults.registry.url;
 
         if(!baseUrlOverride) {
           console.warn(`Failed to connect to registry '${baseUrl}'. Re-attempting with registry '${fallbackUrl}'...`);
           return await fetchWithFallback(fallbackUrl);
         }
-
-        console.error("DEBUG:", error)
 
         throw new Error(`Failed to connect to registries '${baseUrl}' and '${fallbackUrl}'. Terminating...`);
       }

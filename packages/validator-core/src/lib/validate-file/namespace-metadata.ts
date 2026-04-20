@@ -115,6 +115,10 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
           };
         }
       } catch (parseError) {
+        // If namespace doesn't exist (404), fall through to new namespace validation
+        if (parseError instanceof Error && parseError.message.includes("404"))
+          throw parseError;
+
         return {
           success: false,
           errors: [
