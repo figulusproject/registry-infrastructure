@@ -69,9 +69,22 @@ jobs:
         run: npm run build
         working-directory: packages/validator-node
 
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          VERSION=$(node -p "require('./packages/validator-node/package.json').version")
+          if [[ "$VERSION" =~ -rc ]]; then
+            TAG="rc"
+          elif [[ "$VERSION" =~ -dev ]]; then
+            TAG="dev"
+          else
+            TAG="latest"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
       # Trusted publishing via OIDC — no token needed. Configure at https://www.npmjs.com/package/@figulus/validator-node/access before first use.
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }}
         working-directory: packages/validator-node
 
   release-binaries:
