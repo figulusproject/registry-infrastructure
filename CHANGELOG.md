@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0-alpha-rc8] — 2026-04-21
+
+### Fixed
+
+- **`validator-goja` blob file existence check** — fixed `fileOrDirExists` helper to correctly handle absolute paths returned by `resolvePath`. Previously, `filepath.Join(repoRoot, absolutePath)` would ignore the repoRoot and still check the wrong location when validating blob references. Now checks `filepath.IsAbs()` before joining, preventing absolute paths from being incorrectly joined with repoRoot.
+
+### Changed
+
+- **Build artifacts removed from git** — removed accidentally committed Go binaries (`packages/local-registry/local-registry` and `packages/validator-goja/validator-goja`). Added `.gitignore` files to both packages to prevent future binary commits.
+
+---
+
 ## [0.5.0-alpha-rc7] — 2026-04-20
 
 ### Changed

@@ -71,7 +71,10 @@ func InjectHelpers(rt *goja.Runtime, repoRoot string, localUsername string, sett
 			return rt.ToValue(false)
 		}
 		path := call.Arguments[0].String()
-		fullPath := filepath.Join(repoRoot, path)
+		fullPath := path
+		if !filepath.IsAbs(path) {
+			fullPath = filepath.Join(repoRoot, path)
+		}
 
 		_, err := os.Stat(fullPath)
 		exists := err == nil
