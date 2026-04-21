@@ -132,7 +132,7 @@ jobs:
             OS=${TARGET%/*}
             ARCH=${TARGET#*/}
             cd packages/validator-goja
-            GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
+            CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
               -o ../../dist/validator-goja-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH} .
             cd ../..
           done
@@ -143,7 +143,7 @@ jobs:
             OS=${TARGET%/*}
             ARCH=${TARGET#*/}
             cd packages/local-registry
-            GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
+            CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build -ldflags "-X main.Version=${{ steps.version.outputs.VERSION }}" \
               -o ../../dist/local-registry-${{ steps.version.outputs.VERSION }}-${OS}-${ARCH} .
             cd ../..
           done

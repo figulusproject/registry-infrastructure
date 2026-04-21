@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0-alpha-rc9] — 2026-04-21
+
+### Fixed
+
+- **`validator-goja` and `local-registry` Alpine compatibility** — release workflow now builds both binaries with `CGO_ENABLED=0` to produce fully static binaries. Previously, cgo-enabled builds required libc dependencies that weren't available on Alpine Linux, causing "not found" errors despite the binaries being executable. Static binaries now work on any Linux distribution without libc dependencies.
+
+---
+
 ## [0.5.0-alpha-rc8] — 2026-04-21
 
 ### Fixed
