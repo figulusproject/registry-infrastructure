@@ -259,7 +259,13 @@ func ListPRs(w http.ResponseWriter, r *http.Request) {
 
 // CreatePR validates staged files and commits them
 func CreatePR(w http.ResponseWriter, r *http.Request) {
-	var req PRCreateRequest
+	var req struct {
+		Title  string `json:"title"`
+		Head   string `json:"head"`
+		Base   string `json:"base"`
+		Body   string `json:"body"`
+		Author string `json:"author"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
@@ -284,7 +290,7 @@ func CreatePR(w http.ResponseWriter, r *http.Request) {
 		"localUsername": localUsername,
 	})
 
-	summary, err := lib.ValidateRegistryChanges(stagedFiles, localUsername, repoRoot, string(settingsJSON))
+	summary, err := lib.ValidateRegistryChanges(stagedFiles, req.Author, repoRoot, string(settingsJSON))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("validation error: %v", err))
 		return
@@ -292,6 +298,14 @@ func CreatePR(w http.ResponseWriter, r *http.Request) {
 
 	// Check validation result
 	if !summary.Success {
+		// Clean up staged files on validation failure
+		stagingMutex.Lock()
+		for filePath := range stagingArea {
+			os.Remove(filepath.Join(repoRoot, filePath))
+		}
+		stagingArea = make(map[string]string)
+		stagingMutex.Unlock()
+
 		// Return validation errors
 		respJSON, _ := json.Marshal(summary)
 		writeJSONString(w, http.StatusUnprocessableEntity, string(respJSON))

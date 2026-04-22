@@ -1,6 +1,6 @@
 {
   "name": "@figulus/registry-infrastructure",
-  "version": "0.5.0-alpha-rc13",
+  "version": "0.5.0-alpha-rc14",
   "private": true,
   "description": "Infrastructure for the Figulus Registry",
   "type": "module",

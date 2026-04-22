@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0-alpha-rc14] — 2026-04-22
+
+### Changed
+
+- **`local-registry` author field in PR requests** — added explicit `Author` field to pull request metadata passed to validators. Previously, validators always received the hardcoded local registry username (`localUsername`), losing the author context passed by the CLI. Now the author is extracted from the request body and forwarded to validation, allowing validators to enforce author-based governance rules.
+
+### Fixed
+
+- **`local-registry` staged file cleanup on validation failure** — fixed leaked temporary files on validation failures. Previously, when a PR request validation failed and returned a 422 response, staged files were never deleted from disk, leaving behind orphaned files. Now staged files are cleaned up before returning the validation error response.
+
+---
+
 ## [0.5.0-alpha-rc13] — 2026-04-21
 
 ### Fixed
