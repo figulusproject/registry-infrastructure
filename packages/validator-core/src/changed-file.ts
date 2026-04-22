@@ -138,11 +138,10 @@ export class ChangedFile {
   }
 
   public parseJson(): any {
-    const { validatorSettings: settings, helpers } = this.pr.registry;
-    const { fs } = helpers;
+    const { validatorSettings, helpers } = this.pr.registry;
 
-    const fullPath = fs.resolvePath(settings.repoRoot, this.path);
-    const content = fs.readFileAsUtf8(fullPath);
+    const fullPath = helpers.fs.resolvePath(validatorSettings.repoRoot, this.path);
+    const content = helpers.fs.readFileAsUtf8(fullPath);
 
     return parseJSON(content);
   }

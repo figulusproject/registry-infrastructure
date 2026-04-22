@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,6 +12,15 @@ import (
 func SetupRoutes(r *chi.Mux) {
 	// Health check
 	r.Get("/_health", GetHealth)
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error":   "not_found",
+			"message": fmt.Sprintf("route not found: %s %s", r.Method, r.URL.Path),
+		})
+	})
 
 	// User endpoints
 	r.Get("/api/user", GetUser)

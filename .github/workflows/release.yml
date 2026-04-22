@@ -119,6 +119,13 @@ jobs:
         id: version
         run: echo "VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
+      - name: Run npm ci
+        run: npm ci
+
+      - name: Build validator-bundled
+        run: npm run build
+        working-directory: packages/validator-bundled
+
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
