@@ -1,13 +1,13 @@
 {
   "name": "@figulus/validator-bundled",
-  "version": "0.5.0-alpha-rc14",
+  "version": "0.5.0-alpha-rc15",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node build.mjs"
   },
   "dependencies": {
-    "@figulus/validator-core": "*"
+    "@figulus/validator-core": "rc"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

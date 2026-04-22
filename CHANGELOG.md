@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0-alpha-rc15] — 2026-04-22
+
+### Changed
+
+- **Monorepo package version specifiers** — updated `@figulus/validator-bundled` and `@figulus/validator-node` to use `"rc"` version specifier for their `@figulus/validator-core` dependency instead of wildcard (`"*"`) and pinned prerelease (`"^0.5.0-alpha-rc13"`). The `"rc"` specifier ensures both packages resolve to the latest release candidate version of validator-core within the monorepo, maintaining alignment across pre-release versions and preventing version skew during the alpha cycle.
+
+---
+
 ## [0.5.0-alpha-rc14] — 2026-04-22
 
 ### Changed
