@@ -1,5 +1,6 @@
 import { namespaceMetadataSchema } from "@figulus/schema";
 import { ChangedFile } from "../../changed-file.js";
+import { FILE_NOT_FOUND } from "../../registry-validator.js";
 import {
   ValidationError,
   ValidationResult,
@@ -115,8 +116,8 @@ export async function validateNamespaceMetadata(file: ChangedFile): Promise<Vali
           };
         }
       } catch (parseError) {
-        // If namespace doesn't exist (404), fall through to new namespace validation
-        if (parseError instanceof Error && parseError.message.includes("404"))
+        // If namespace doesn't exist, fall through to new namespace validation
+        if (parseError instanceof Error && parseError.message.includes(FILE_NOT_FOUND))
           throw parseError;
 
         return {

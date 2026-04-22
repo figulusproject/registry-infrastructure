@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0-alpha-rc13] — 2026-04-21
+
+### Fixed
+
+- **File-not-found error handling abstraction** — introduced shared `FILE_NOT_FOUND` constant across validator implementations to decouple error handling from HTTP semantics. Previously, `validator-core` checked for "404" in error messages to distinguish file-not-found from unexpected errors, but `validator-goja` used git library semantics with custom error messages, causing new namespace creation to fail. Now both `validator-node` and `validator-goja` throw errors containing the `FILE_NOT_FOUND` sentinel, allowing validator-core to handle missing files uniformly regardless of underlying implementation (HTTP or git-based).
+- **`validator-goja` duplicate output** — removed duplicate markdown printing from `main.go`. The validation result markdown was already being printed by `pr.ts` via console helpers, causing output to appear twice in the CLI. Now `main.go` only handles exit codes while letting the validation layer handle output.
+
+---
+
 ## [0.5.0-alpha-rc12] — 2026-04-21
 
 ### Changed

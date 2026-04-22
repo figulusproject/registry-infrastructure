@@ -100,12 +100,10 @@ func main() {
 		}
 	}
 
-	// Print markdown to stdout or stderr based on success
+	// Exit with appropriate code (markdown already printed by console helpers in pr.ts)
 	if summary.Success {
-		fmt.Println(summary.Markdown)
 		os.Exit(0)
 	} else {
-		fmt.Fprintf(os.Stderr, summary.Markdown)
 		os.Exit(1)
 	}
 }

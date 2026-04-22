@@ -67,7 +67,7 @@ export class PR {
 
     if(hasErrors) helpers.console.error(markdown);
     else helpers.console.log(markdown);
-    
+
     return {
       ...baseOutput,
       markdown,

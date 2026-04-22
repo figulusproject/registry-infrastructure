@@ -16,6 +16,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
+const FILE_NOT_FOUND = "FILE_NOT_FOUND"
+
 // resolvePromise resolves a promise with the given value
 func resolvePromise(rt *goja.Runtime, value goja.Value) goja.Value {
 	promise, resolve, _ := rt.NewPromise()
@@ -150,7 +152,7 @@ func injectHelpers(rt *goja.Runtime, repoRoot string, localUsername string) erro
 
 		file, err := tree.File(filePath)
 		if err != nil {
-			return rejectPromise(rt, fmt.Sprintf("showHead: file not found: %v", err))
+			return rejectPromise(rt, FILE_NOT_FOUND)
 		}
 
 		content, err := file.Contents()

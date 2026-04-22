@@ -1,5 +1,5 @@
 import { SchemaObject } from "../types.js";
-import { Helpers } from "../registry-validator.js";
+import { FILE_NOT_FOUND, Helpers } from "../registry-validator.js";
 import {
   NamespaceMetadata,
   namespaceMetadataSchema,

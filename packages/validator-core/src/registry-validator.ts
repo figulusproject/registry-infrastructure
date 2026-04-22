@@ -3,6 +3,8 @@ import { PR } from "./pr.js";
 import { PullRequestInfo } from "./types.js";
 import { loadValidatorSettings, ValidatorSettingsInput, ValidatorSettingsOutput } from "./validator-settings.js";
 
+export const FILE_NOT_FOUND = "FILE_NOT_FOUND";
+
 export interface Helpers {
   console: {
     log: (...data: any[]) => void;

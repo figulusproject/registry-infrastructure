@@ -15171,7 +15171,7 @@ async function validateNamespaceMetadata(file2) {
           };
         }
       } catch (parseError) {
-        if (parseError instanceof Error && parseError.message.includes("404"))
+        if (parseError instanceof Error && parseError.message.includes(FILE_NOT_FOUND))
           throw parseError;
         return {
           success: false,
@@ -15507,6 +15507,7 @@ function loadValidatorSettings(input) {
 }
 
 // ../validator-core/dist/registry-validator.js
+var FILE_NOT_FOUND = "FILE_NOT_FOUND";
 var RegistryValidator = class {
   helpers;
   validatorSettings;

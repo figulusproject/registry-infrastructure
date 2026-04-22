@@ -1,4 +1,4 @@
-export { Helpers, RegistryValidator } from "./registry-validator.js";
+export { FILE_NOT_FOUND, Helpers, RegistryValidator } from "./registry-validator.js";
 export {
   validatorSettingsSchemaInput,
   validatorSettingsSchemaOutput,

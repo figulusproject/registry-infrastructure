@@ -4,6 +4,7 @@ import {
   getFileContentsRouteSchema,
   getPRFilesRouteSchema
 } from "@figulus/schema/registry";
+import { FILE_NOT_FOUND } from "@figulus/validator-core";
 import { up } from "up-fetch";
 import { ZodType } from "zod";
 import { validatorSettings } from "./validator-settings.js";
@@ -94,7 +95,7 @@ async function fetchFromRegistry<T>(params: {
         });
       } catch (error) {
         if (error instanceof Error && error.message.includes("404"))
-          throw error;
+          throw new Error(FILE_NOT_FOUND);
 
         const fallbackUrl = validatorSettingsDefaults.registry.url;
 
