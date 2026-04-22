@@ -14522,7 +14522,7 @@ function parseLicenseId(input, options) {
   return licenseIdSchema.safeParse(input);
 }
 
-// ../validator-core/node_modules/@figulus/schema/dist/registry/metadata.js
+// ../../node_modules/@figulus/schema/dist/registry/metadata.js
 var ipfsSchema = zod_default.string().startsWith("ipfs:");
 var urlLike = zod_default.union([zod_default.url(), ipfsSchema]);
 var namespaceMetadataEditorEntrySchema = zod_default.object({
@@ -14616,8 +14616,8 @@ var blobSchema = zod_default.object({
 var variantSchema = zod_default.object({
   blob: blobSchema,
   tag: zod_default.string().optional(),
-  createdAt: zod_default.iso.datetime().default((/* @__PURE__ */ new Date()).toISOString()),
-  updatedAt: zod_default.iso.datetime().default((/* @__PURE__ */ new Date()).toISOString())
+  createdAt: zod_default.iso.datetime(),
+  updatedAt: zod_default.iso.datetime()
 });
 var parserVariantSchema = variantSchema.extend({
   // Represents the parsed JSON schema — allows any object structure since JsonSchemaSchema is
@@ -14639,6 +14639,60 @@ var figSpecMetadataSchema = figEntityMetadataBaseSchema.extend({
 var figStackMetadataSchema = figEntityMetadataBaseSchema.extend({
   variants: uniqueArray(variantSchema)
 });
+
+// ../../node_modules/@figulus/schema/dist/registry/settings.js
+var pushLimitOverridesSetByUnitSchema = zod_default.object({
+  max: zod_default.int().describe("Maximum number of pushes allowed in this time unit"),
+  min: zod_default.int().describe("Minimum number of pushes allowed in this time unit")
+});
+var pushLimitOverridesSetBySchema = zod_default.object({
+  daily: pushLimitOverridesSetByUnitSchema.describe("Min/max limits for daily push overrides"),
+  weekly: pushLimitOverridesSetByUnitSchema.describe("Min/max limits for weekly push overrides")
+});
+var registrySettingsSchema = zod_default.object({
+  registryMaintainers: zod_default.string().array().describe("List of usernames who maintain the registry"),
+  restrictedNamespaces: zod_default.string().array().describe("List of namespace names that are reserved and cannot be registered by users"),
+  pushLimits: zod_default.object({
+    default: zod_default.object({
+      unit: zod_default.enum(["daily", "weekly"]).describe("Time unit for the default push limit"),
+      pushes: zod_default.int().describe("Number of pushes allowed per time unit by default")
+    }).describe("Default push rate limit for all namespaces"),
+    overridesSetBy: zod_default.object({
+      namespaceOwners: pushLimitOverridesSetBySchema.describe("Range of limits that namespace owners can set"),
+      registryMaintainers: pushLimitOverridesSetBySchema.describe("Range of limits that registry maintainers can set")
+    }).describe("Configuration for who can override push limits and what ranges they can set")
+  }).describe("Push rate limiting configuration")
+});
+var registrySettingsPartialSchema = registrySettingsSchema.partial();
+var registrySettingsDefaults = {
+  registryMaintainers: ["figulusproject"],
+  restrictedNamespaces: [
+    "examples",
+    "figulus",
+    "official",
+    "push-limit-overrides",
+    "verified"
+  ],
+  pushLimits: {
+    default: { unit: "daily", pushes: 10 },
+    overridesSetBy: {
+      namespaceOwners: {
+        daily: { min: 1, max: 10 },
+        weekly: { min: 1, max: 10 * 7 }
+      },
+      registryMaintainers: {
+        daily: { min: 0, max: 30 },
+        weekly: { min: 0, max: 30 * 7 }
+      }
+    }
+  }
+};
+function loadRegistrySettings(input) {
+  return {
+    ...registrySettingsDefaults,
+    ...input
+  };
+}
 
 // ../../node_modules/strip-json-comments/index.js
 var singleComment = Symbol("singleComment");
@@ -14803,7 +14857,7 @@ function parseSchema(data, schema) {
 
 // ../validator-core/dist/lib/validate-file/blob.js
 function validateBlob(file2) {
-  const { helpers, settings } = file2.pr.registry;
+  const { helpers, validatorSettings } = file2.pr.registry;
   const fileName = helpers.fs.splitPath(file2.path).pop();
   if (!fileName) {
     return {
@@ -14834,7 +14888,7 @@ function validateBlob(file2) {
     };
   }
   try {
-    const path = helpers.fs.resolvePath(settings.repoRoot, file2.path);
+    const path = helpers.fs.resolvePath(validatorSettings.repoRoot, file2.path);
     const content = helpers.fs.readFileAsUtf8(path);
     const actualHash = helpers.crypto.createSha256HexHash(content);
     if (actualHash !== expectedHash) {
@@ -14859,7 +14913,7 @@ function validateBlob(file2) {
 // ../validator-core/dist/lib/git-head.js
 async function getFileFromHeadAndParse(filePath, schema, helpers) {
   try {
-    const headContent = await helpers.git.showHead(filePath);
+    const headContent = await helpers.registry.showHead(filePath);
     const data = parseJSON(headContent);
     const result = schema.safeParse(data);
     return result.success ? data : null;
@@ -14880,7 +14934,9 @@ function getNamespaceEditorEntry(user, namespaceMetadata) {
 }
 
 // ../validator-core/dist/lib/check-push-limit.js
-async function checkPushLimit(prAuthor, namespace, helpers, settings) {
+async function checkPushLimit(prAuthor, namespace, registryValidator) {
+  const { helpers } = registryValidator;
+  const registrySettings = await registryValidator.getRegistrySettings();
   const namespaceMetadata = await getNamespaceMetadataFromHead(namespace, helpers);
   if (!namespaceMetadata)
     return null;
@@ -14888,8 +14944,8 @@ async function checkPushLimit(prAuthor, namespace, helpers, settings) {
   if (!editorEntry)
     return null;
   let editorLimit = editorEntry.pushLimit || {
-    unit: settings.pushLimits.default.unit,
-    value: settings.pushLimits.default.pushes
+    unit: registrySettings.pushLimits.default.unit,
+    value: registrySettings.pushLimits.default.pushes
   };
   const overrides = await getPushLimitOverridesFromHead(helpers);
   const override = overrides ? overrides.find((o) => o.namespace === namespace) : void 0;
@@ -14916,10 +14972,10 @@ async function checkPushLimit(prAuthor, namespace, helpers, settings) {
       `parsers/${namespace}/`,
       `blobs/${namespace}/`
     ];
-    const prs = (await helpers.git.getAllPRs()).filter((pr) => pr.user.id === prAuthor && new Date(pr.created_at) >= startDate);
+    const prs = (await helpers.registry.getAllPRs()).filter((pr) => pr.user.id === prAuthor && new Date(pr.created_at) >= startDate);
     let count = 0;
     for (const pr of prs) {
-      const files = await helpers.git.getPRFiles(pr.url);
+      const files = await helpers.registry.getPRFiles(pr.url);
       const touchesNamespace = files.some((f) => filePrefixes.some((prefix) => f.filename.startsWith(prefix)));
       if (touchesNamespace)
         count++;
@@ -14944,7 +15000,7 @@ function validateBlobReferences(data, namespace, type, registry2) {
     const extension = getExtensionFromFileTypeEntity(type);
     if (!contentHash || !extension)
       continue;
-    const blobPath = registry2.helpers.fs.resolvePath(registry2.settings.repoRoot, `blobs/${namespace}/${contentHash}.${extension}`);
+    const blobPath = registry2.helpers.fs.resolvePath(registry2.validatorSettings.repoRoot, `blobs/${namespace}/${contentHash}.${extension}`);
     if (!registry2.helpers.fs.fileOrDirExists(blobPath)) {
       errors.push(createError({ code: "BLOB_REFERENCE_NOT_FOUND", contentHash, namespace, extension }));
     }
@@ -14955,11 +15011,9 @@ function validateBlobReferences(data, namespace, type, registry2) {
 // ../validator-core/dist/lib/validate-file/entity.js
 async function validateEntity(file2, type) {
   const { registry: registry2, prInfo } = file2.pr;
-  const { settings, helpers } = registry2;
-  const { fs } = helpers;
   const namespace = file2.getNamespace(type);
   const isAllowedToChangeEntityFile = async () => {
-    if (registry2.isNamespaceRestricted(namespace)) {
+    if (await registry2.isNamespaceRestricted(namespace)) {
       if (!registry2.isMaintainer(prInfo.author)) {
         return {
           success: false,
@@ -14986,7 +15040,7 @@ async function validateEntity(file2, type) {
           ]
         };
       }
-      const pushLimitError = await checkPushLimit(prInfo.author, namespace, helpers, settings);
+      const pushLimitError = await checkPushLimit(prInfo.author, namespace, registry2);
       if (pushLimitError) {
         return {
           success: false,
@@ -15038,19 +15092,20 @@ function validatePushLimitConstraints(pushLimit, constraints, context) {
   }
   return null;
 }
-function getPushLimitConstraintsForEditor(settings, unit) {
+async function getPushLimitConstraintsForEditor(registry2, unit) {
+  const settings = await registry2.getRegistrySettings();
   return settings.pushLimits.overridesSetBy.namespaceOwners[unit];
 }
-function getPushLimitConstraintsForMaintainer(settings, unit) {
+async function getPushLimitConstraintsForMaintainer(registry2, unit) {
+  const settings = await registry2.getRegistrySettings();
   return settings.pushLimits.overridesSetBy.registryMaintainers[unit];
 }
 
 // ../validator-core/dist/lib/validate-file/namespace-metadata.js
 async function validateNamespaceMetadata(file2) {
   const { registry: registry2, prInfo } = file2.pr;
-  const { git } = registry2.helpers;
   const namespace = file2.getNamespace("namespace");
-  if (registry2.isNamespaceRestricted(namespace)) {
+  if (await registry2.isNamespaceRestricted(namespace)) {
     if (!registry2.isMaintainer(prInfo.author))
       return {
         success: false,
@@ -15060,12 +15115,12 @@ async function validateNamespaceMetadata(file2) {
       };
   }
   const prAuthor = file2.pr.prInfo.author;
-  const validatePushLimitsInMetadata = (data) => {
+  const validatePushLimitsInMetadata = async (data) => {
     const errors = [];
     const editors = data.editors || [];
     for (const editor of editors) {
       if (editor.pushLimit) {
-        const constraints = getPushLimitConstraintsForEditor(registry2.settings, editor.pushLimit.unit);
+        const constraints = await getPushLimitConstraintsForEditor(registry2, editor.pushLimit.unit);
         const error48 = validatePushLimitConstraints(editor.pushLimit, constraints, `Editor ${editor.username}`);
         if (error48)
           errors.push(error48);
@@ -15076,7 +15131,7 @@ async function validateNamespaceMetadata(file2) {
   if (namespace) {
     try {
       try {
-        const headContent = await git.showHead(file2.path);
+        const headContent = await registry2.helpers.registry.showHead(file2.path);
         const headData = parseJSON(headContent);
         const headEditors = headData.editors || [];
         const isEditorInHead = headEditors.some((e) => e.username === prAuthor);
@@ -15102,7 +15157,7 @@ async function validateNamespaceMetadata(file2) {
           const schemaResult = parseSchema(data, namespaceMetadataSchema);
           if (!schemaResult.success)
             return schemaResult;
-          const pushLimitErrors = validatePushLimitsInMetadata(data);
+          const pushLimitErrors = await validatePushLimitsInMetadata(data);
           if (pushLimitErrors.length > 0) {
             return { success: false, errors: pushLimitErrors };
           }
@@ -15116,6 +15171,8 @@ async function validateNamespaceMetadata(file2) {
           };
         }
       } catch (parseError) {
+        if (parseError instanceof Error && parseError.message.includes("404"))
+          throw parseError;
         return {
           success: false,
           errors: [
@@ -15131,7 +15188,7 @@ async function validateNamespaceMetadata(file2) {
     const schemaResult = parseSchema(data, namespaceMetadataSchema);
     if (!schemaResult.success)
       return schemaResult;
-    const pushLimitErrors = validatePushLimitsInMetadata(data);
+    const pushLimitErrors = await validatePushLimitsInMetadata(data);
     if (pushLimitErrors.length > 0) {
       return { success: false, errors: pushLimitErrors };
     }
@@ -15157,7 +15214,7 @@ async function validateNamespaceMetadata(file2) {
 }
 
 // ../validator-core/dist/lib/validate-file/namespace-overrides.js
-function validateNamespaceOverrides(file2, fileType) {
+async function validateNamespaceOverrides(file2, fileType) {
   const { registry: registry2, prInfo } = file2.pr;
   if (!registry2.isMaintainer(prInfo.author)) {
     return {
@@ -15177,7 +15234,7 @@ function validateNamespaceOverrides(file2, fileType) {
       const overrides = data || [];
       for (const override of overrides) {
         if (override.pushLimit) {
-          const constraints = getPushLimitConstraintsForMaintainer(registry2.settings, override.pushLimit.unit);
+          const constraints = await getPushLimitConstraintsForMaintainer(registry2, override.pushLimit.unit);
           const error48 = validatePushLimitConstraints(override.pushLimit, constraints, `Namespace ${override.namespace}`);
           if (error48)
             errors.push(error48);
@@ -15270,10 +15327,9 @@ var ChangedFile = class {
     return base;
   }
   parseJson() {
-    const { settings, helpers } = this.pr.registry;
-    const { fs } = helpers;
-    const fullPath = fs.resolvePath(settings.repoRoot, this.path);
-    const content = fs.readFileAsUtf8(fullPath);
+    const { validatorSettings, helpers } = this.pr.registry;
+    const fullPath = helpers.fs.resolvePath(validatorSettings.repoRoot, this.path);
+    const content = helpers.fs.readFileAsUtf8(fullPath);
     return parseJSON(content);
   }
   async validate() {
@@ -15305,7 +15361,7 @@ var ChangedFile = class {
         break;
       case "verified":
       case "limits":
-        result = validateNamespaceOverrides(this, fileType);
+        result = await validateNamespaceOverrides(this, fileType);
         break;
     }
     return { file: this.path, type: fileType, result };
@@ -15369,7 +15425,7 @@ var PR = class {
     return this.prInfo.author;
   }
   getSettings() {
-    return this.registry.settings;
+    return this.registry.validatorSettings;
   }
   getHelpers() {
     return this.registry.helpers;
@@ -15420,75 +15476,32 @@ var PR = class {
   }
 };
 
-// ../validator-core/dist/settings.js
-var pushLimitOverridesSetBySchema = zod_default.object({
-  daily: zod_default.object({
-    max: zod_default.int(),
-    min: zod_default.int()
-  }),
-  weekly: zod_default.object({
-    max: zod_default.int(),
-    min: zod_default.int()
-  })
-});
+// ../validator-core/dist/validator-settings.js
 var settingsSchemaRequiredFields = {
   repoRoot: zod_default.string()
 };
 var settingsSchemaOptionalFields = {
-  registryMaintainers: zod_default.string().array(),
-  restrictedNamespaces: zod_default.string().array(),
-  registryRepo: zod_default.object({
-    apiUrl: zod_default.url(),
+  registry: zod_default.object({
+    url: zod_default.url(),
     accessToken: zod_default.string().optional().nullable()
-  }),
-  pushLimits: zod_default.object({
-    default: zod_default.object({
-      unit: zod_default.enum(["daily", "weekly"]),
-      pushes: zod_default.int()
-    }),
-    overridesSetBy: zod_default.object({
-      namespaceOwners: pushLimitOverridesSetBySchema,
-      registryMaintainers: pushLimitOverridesSetBySchema
-    })
   })
 };
-var settingsSchemaOutput = zod_default.object({
+var validatorSettingsSchemaOutput = zod_default.object({
   ...settingsSchemaOptionalFields,
   ...settingsSchemaRequiredFields
 });
-var settingsSchemaInput = zod_default.object({
+var validatorSettingsSchemaInput = zod_default.object({
   ...zod_default.object(settingsSchemaOptionalFields).partial().shape,
   ...settingsSchemaRequiredFields
 });
-var settingsDefaults = {
-  registryMaintainers: ["figulusproject"],
-  restrictedNamespaces: [
-    "examples",
-    "figulus",
-    "official",
-    "push-limit-overrides",
-    "verified"
-  ],
-  registryRepo: {
-    apiUrl: "https://api.github.com/repos/figulusproject/registry/"
-  },
-  pushLimits: {
-    default: { unit: "daily", pushes: 10 },
-    overridesSetBy: {
-      namespaceOwners: {
-        daily: { min: 1, max: 10 },
-        weekly: { min: 1, max: 10 * 7 }
-      },
-      registryMaintainers: {
-        daily: { min: 0, max: 30 },
-        weekly: { min: 0, max: 30 * 7 }
-      }
-    }
+var validatorSettingsDefaults = {
+  registry: {
+    url: "https://registry.figulus.net"
   }
 };
-function loadSettings(input) {
+function loadValidatorSettings(input) {
   return {
-    ...settingsDefaults,
+    ...validatorSettingsDefaults,
     ...input
   };
 }
@@ -15496,26 +15509,37 @@ function loadSettings(input) {
 // ../validator-core/dist/registry-validator.js
 var RegistryValidator = class {
   helpers;
-  settings;
+  validatorSettings;
+  registrySettings;
   constructor(helpers, settingsInput) {
     this.helpers = helpers;
-    this.settings = loadSettings(settingsInput);
+    this.validatorSettings = loadValidatorSettings(settingsInput);
+  }
+  async getRegistrySettings() {
+    if (!this.registrySettings) {
+      const res = await this.helpers.registry.getSettings();
+      const parsed = registrySettingsPartialSchema.parse(JSON.parse(res));
+      this.registrySettings = loadRegistrySettings(parsed);
+    }
+    return this.registrySettings;
   }
   async validatePr(prInfo) {
     return await new PR(prInfo, this).validate();
   }
-  isMaintainer(user) {
-    return this.settings.registryMaintainers.includes(user);
+  async isMaintainer(user) {
+    const registrySettings = await this.getRegistrySettings();
+    return registrySettings.registryMaintainers.includes(user);
   }
-  isNamespaceRestricted(namespace) {
-    return this.settings.restrictedNamespaces.includes(namespace);
+  async isNamespaceRestricted(namespace) {
+    const registrySettings = await this.getRegistrySettings();
+    return registrySettings.restrictedNamespaces.includes(namespace);
   }
 };
 
 // src/wrapper.ts
 globalThis.validateRegistryChanges = async (changedFiles, author) => {
   const helpers = globalThis.__goHelpers;
-  const settings = loadSettings(JSON.parse(globalThis.__goSettings));
+  const settings = loadValidatorSettings(JSON.parse(globalThis.__goSettings));
   const validator = new RegistryValidator(helpers, settings);
   const result = await validator.validatePr({ changedFiles, author });
   return JSON.stringify(result);

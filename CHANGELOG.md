@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0-alpha-rc12] — 2026-04-21
+
+### Changed
+
+- **`validator-goja` bundle reference** — replaced stale checked-in `validator-bundled.js` file with a symlink to `../validator-bundled/dist/validator-bundled.js`. Ensures `go generate ./lib` copies the freshly built bundle instead of an outdated version, fixing the release workflow to actually use newly-compiled validator-core changes.
+
+---
+
 ## [0.5.0-alpha-rc11] — 2026-04-21
 
 ### Fixed
