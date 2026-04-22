@@ -1,6 +1,6 @@
 {
   "name": "@figulus/validator-bundled",
-  "version": "0.5.0-alpha-rc10",
+  "version": "0.5.0-alpha-rc11",
   "private": true,
   "type": "module",
   "scripts": {

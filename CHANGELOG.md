@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0-alpha-rc11] — 2026-04-21
+
+### Fixed
+
+- **Release workflow dependency build order** — fixed `release-binaries` job to build `validator-core` before `validator-bundled`. Previously, only installing npm dependencies wasn't enough; the bundler needs the compiled validator-core dist files. Now builds both in the correct order before running `go generate ./lib`.
+
+---
+
+## [0.5.0-alpha-rc10] — 2026-04-21
+
+### Fixed
+
+- **Release workflow binary build** — fixed `release-binaries` job to build `validator-bundled` before running `go generate ./lib`. Previously, the npm bundle didn't exist when the Go build tried to copy it via symlink, causing build failures. Now the job installs npm dependencies and builds the bundle first, matching the pattern used in the `check` job.
+
+### Changed
+
+- **`local-registry` 404 responses** — added explicit NotFound handler to return structured JSON error responses (`{"error": "not_found", "message": "..."}`) for undefined routes instead of chi's default plain-text 404. Matches the registry API contract by always returning JSON with consistent error codes.
+- **`@figulus/validator-core` variable destructuring** — simplified destructuring patterns in `ChangedFile.parseJson()` and `parseFileJson()` to avoid intermediate variable aliases. Now accesses `helpers.fs` directly rather than destructuring `fs` separately, improving code clarity.
+
+---
+
 ## [0.5.0-alpha-rc9] — 2026-04-21
 
 ### Fixed
